@@ -27,7 +27,6 @@ public class Order {
     @ManyToOne
     @JoinColumn(name = "users", referencedColumnName = "id")
     private User user;
-
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "date_created")
@@ -41,6 +40,7 @@ public class Order {
 
     @Column(name = "total_cost")
     private Double totalCost;
+
     @Column(name = "status")
     private String status;
 

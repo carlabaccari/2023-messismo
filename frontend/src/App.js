@@ -12,6 +12,7 @@ import Login from "./screens/Login";
 import Register from "./screens/Register";
 import Dashboard from "./screens/Dashboard";
 import Goals from "./screens/Goals";
+import Combos from "./screens/Combos";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Route path="/orders" element={<Orders />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/categories" element={<Categories />} />
+          <Route path="/combos" element={<Combos />} />
         </Routes>
       </BrowserRouter>
     </div>

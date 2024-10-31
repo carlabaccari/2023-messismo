@@ -3,6 +3,7 @@ package com.messismo.bar.Controllers;
 import com.messismo.bar.DTOs.*;
 import com.messismo.bar.Exceptions.*;
 import com.messismo.bar.Services.CategoryService;
+import com.messismo.bar.Services.ComboService;
 import com.messismo.bar.Services.OrderService;
 import com.messismo.bar.Services.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,8 @@ public class ValidatedEmployeeController {
     private final CategoryService categoryService;
 
     private final OrderService orderService;
+
+    private final ComboService comboService;
 
     @PostMapping("/product/addProduct")
     public ResponseEntity<?> addProduct(@RequestBody ProductDTO productDTO) {
@@ -98,6 +101,28 @@ public class ValidatedEmployeeController {
     @GetMapping("orders/getAllOrders")
     public ResponseEntity<?> getAllOrders() {
         return ResponseEntity.status(HttpStatus.OK).body(orderService.getAllOrders());
+    }
+
+    @PostMapping("/combo/addCombo")
+    public ResponseEntity<?> addCombo(@RequestBody ComboDTO comboDTO) {
+        if (comboDTO.getName() == null || comboDTO.getPrice() == null || comboDTO.getProducts().isEmpty()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Missing information to create a product");
+        }
+        if (comboDTO.getPrice() <= 0) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Some values cannot be less than zero. Please check");
+        }
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED).body(comboService.addCombo(comboDTO));
+        } catch (ExistingComboNameFoundException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/getAllCombos")
+    public ResponseEntity<?> getAllCombos() {
+        return ResponseEntity.status(HttpStatus.OK).body(comboService.getAllCombos());
     }
 
 }

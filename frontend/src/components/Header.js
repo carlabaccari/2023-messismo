@@ -155,6 +155,13 @@ const Header = () => {
                         <span>Products</span>
                     </NavLink>
                 )}
+                
+                {userPending === 'no' && (
+                    <NavLink to={'/combos'} expanded={open}>
+                        <PiCoffeeFill className='icon'/>
+                        <span>Combos</span>
+                    </NavLink>
+                )}
 
                 {userType === 'admin' && userPending === 'no' && (
                     <NavLink to={'/resources'} expanded={open}>

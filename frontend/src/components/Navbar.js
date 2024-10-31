@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { FaHome } from 'react-icons/fa'
 import { BsPersonCircle } from 'react-icons/bs'
 import { PiCoffeeFill } from 'react-icons/pi'
+import { MdFastfood } from 'react-icons/md';
 import { ImExit } from 'react-icons/im'
 import { VscGraph } from 'react-icons/vsc'
 import { HiShoppingBag } from 'react-icons/hi2'
@@ -199,6 +200,13 @@ function Navbar() {
                         <PiCoffeeFill className='icon'/>
                         <span>Products</span>
                     </NavLink>
+                )}
+
+                {(showManagerBoard || showAdminBoard || showValidatedEmployeeBoard) && (
+                                    <NavLink to={'/combos'} onClick={clicked ? handleClick : undefined}>
+                                        <MdFastfood className='icon'/>
+                                        <span>Combos</span>
+                </NavLink>
                 )}
 
                 {(showManagerBoard || showAdminBoard || showValidatedEmployeeBoard) && (

@@ -72,11 +72,14 @@ const [isLoading, setIsLoading] = useState(true);
   }, [openFormModal, open]);
 
   useEffect(() => {
+    console.log("hola");
     if (!isEditFormOpen) {
     combosService
       .getAllCombos()
       .then((response) => {
+        console.log(response.data);
         setCombos(response.data);
+        console.log(response.data);
         setIsLoading(false);
       })
       .catch((error) => {
@@ -173,23 +176,7 @@ const [isLoading, setIsLoading] = useState(true);
     setIsEditFormOpen(false);
   };
 
-  const handleSaveProduct = async (newProductData) => {
-    try {
-      const response = await addProductAsync(newProductData);
-      console.log(response)
-      setIsOperationSuccessful(true);
-      setAlertText("Product added successfully!");
-
-      const updatedProductsResponse = await productsService.getAllProducts();
-      setProducts(updatedProductsResponse.data);
-    } catch (error) {
-      console.error("Error al agregar el producto", error);
-      setIsOperationSuccessful(false);
-      setAlertText("Failed to add product");
-    } finally {
-      setOpenSnackbar(true);
-    }
-  };
+  
 
 
   const handleSaveCombo = async (newComboData) => {
@@ -213,9 +200,6 @@ const [isLoading, setIsLoading] = useState(true);
 
   const addComboAsync = async (newComboData) => {
     return combosService.addCombos(newComboData);
-  };
-  const addProductAsync = async (newProductData) => {
-    return productsService.addProducts(newProductData);
   };
 
   const handleEditProduct = (newProductData) => {
@@ -262,17 +246,7 @@ const [isLoading, setIsLoading] = useState(true);
     }
   };
 
-  const handleShowMoreClick = (index) => {
-    const newShowFullDescriptions = [...showFullDescriptions];
-    newShowFullDescriptions[index] = true;
-    setShowFullDescriptions(newShowFullDescriptions);
-  };
 
-  const handleShowLessClick = (index) => {
-    const newShowFullDescriptions = [...showFullDescriptions];
-    newShowFullDescriptions[index] = false;
-    setShowFullDescriptions(newShowFullDescriptions);
-  };
 
   
   
@@ -338,6 +312,8 @@ const [isLoading, setIsLoading] = useState(true);
       
     }
   }, [sortField, sortOrder]);
+
+  
   
   
   
@@ -528,17 +504,21 @@ const [isLoading, setIsLoading] = useState(true);
                   </p>
                 </div>
                 <div className="category">
-            <ul style={{ listStyleType: 'disc', paddingLeft: '20px' }}>
-              {combo.products.map((product, productIndex) => (
-                <li key={productIndex} className="text">{product.name}</li>
-              ))}
-            </ul>
-          </div>
+                <ul style={{ listStyleType: 'disc', paddingLeft: '20px', fontSize: '0.9em' }}>
+                    {combo.products.map((product, productIndex) => (
+                      <li key={productIndex} className="text" style={{ fontSize: '0.7em' }}>
+                        {product.productName}
+                      </li>
+                    ))}
+                </ul>
+                </div>
                 <div className="category">
                   <p className="text">${combo.price}</p>
                 </div>
                 <div className="category">
-                  <p className="text">{combo.profit}%</p>
+                <p className="text">
+                  {combo.profit.toFixed(2)}%
+                </p>
                 </div>
               </div>
               <div className="buttons-edit">
@@ -595,7 +575,7 @@ const [isLoading, setIsLoading] = useState(true);
         >
           <DialogContent>
             <EditComboForm
-              product={editingCombo}
+              combo={editingCombo}
               onSave={handleEditProduct}
               onClose={handleCloseEditForm}
             />

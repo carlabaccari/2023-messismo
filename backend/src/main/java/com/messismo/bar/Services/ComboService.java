@@ -61,7 +61,8 @@ public class ComboService {
             Combo combo = new Combo(
                     comboDTO.getName(),
                     productCombos,
-                    comboDTO.getPrice()
+                    comboDTO.getPrice(),
+                    comboDTO.getProfit()
             );
 
             return comboRepository.save(combo);
@@ -75,8 +76,27 @@ public class ComboService {
         }
     }
 
-    public List<Combo> getAllCombos() {
-        return comboRepository.findAll();
+    public List<ComboDTO> getAllCombos() {
+        List<Combo> combos = comboRepository.findAllWithProducts();
+        return combos.stream().map(this::toComboDTO).toList();
+    }
+
+    private ComboDTO toComboDTO(Combo combo) {
+        double totalCost = combo.getProducts().stream()
+                .mapToDouble(pc -> pc.getProduct().getUnitCost() * pc.getQuantity())
+                .sum();
+
+        double profit = (combo.getPrice() - totalCost) / totalCost * 100;
+
+        List<ProductComboDTO> productComboDTOs = combo.getProducts().stream()
+                .map(pc -> new ProductComboDTO(
+                        pc.getProduct().getProductId(),
+                        pc.getProduct().getName(),
+                        pc.getQuantity()
+                ))
+                .toList();
+
+        return new ComboDTO(combo.getId(), combo.getName(), productComboDTOs, combo.getPrice(), totalCost, profit);
     }
 
 
@@ -95,17 +115,28 @@ public class ComboService {
 
     public String modifyComboPrice(ComboPriceDTO comboPriceDTO) throws Exception {
         try {
-            Combo combo = comboRepository.findById(comboPriceDTO.getId())
-                    .orElseThrow(() -> new ComboNotFoundException("ComboId DOES NOT match any comboId"));
-
-            combo.setPrice(comboPriceDTO.getPrice());
+            Combo combo = comboRepository.findById(comboPriceDTO.getId()).orElseThrow(() -> new ProductNotFoundException("ProductId DOES NOT match any productId"));
+            combo.updatePrice(comboPriceDTO.getPrice());
             comboRepository.save(combo);
-
-            return "Combo price updated successfully";
-        } catch (ComboNotFoundException e) {
+            return "Product price updated successfully";
+        } catch (ProductNotFoundException e) {
             throw e;
         } catch (Exception e) {
-            throw new Exception("Error updating combo price: " + e.getMessage());
+            throw new Exception("");
+        }
+    }
+
+    public String modifyComboProfit(ComboProfitDTO comboProfitDTO) throws Exception {
+        try {
+            Combo combo = comboRepository.findById(comboProfitDTO.getId()).orElseThrow(() -> new ProductNotFoundException("ProductId DOES NOT match any productId"));
+            combo.updateProfit(comboProfitDTO.getProfit());
+            comboRepository.save(combo);
+            System.out.println(combo);
+            return "Combo profit updated successfully";
+        } catch (ProductNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new Exception("");
         }
     }
 

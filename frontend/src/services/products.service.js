@@ -74,6 +74,24 @@ const updateProductPrice = (productId, updatedPrice) => {
     )
 };
 
+const updateProductCost = (productId, updatedCost) => {
+  const newProductCost = {
+    productId: productId,
+    unitCost: updatedCost,
+  };
+
+  return axios
+    .put(
+      apiUrl + "/api/v1/manager/product/updateCost",
+      newProductCost,
+      {
+        headers: authHeader(),
+        method: "PUT",
+        "Content-Type": "application/json",
+      }
+    )
+};
+
 
 const updateProductStock = (productId, operation, updatedStock) => {
   const newProductStock= {
@@ -170,6 +188,7 @@ const productsService = {
   addProducts,
   deleteProduct,
   updateProductPrice,
+  updateProductCost,
   filterByName,
   filter,
   updateProductStock,

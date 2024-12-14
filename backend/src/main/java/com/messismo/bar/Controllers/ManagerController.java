@@ -1,6 +1,7 @@
 package com.messismo.bar.Controllers;
 
 import com.messismo.bar.DTOs.*;
+import com.messismo.bar.Entities.Combo;
 import com.messismo.bar.Exceptions.*;
 import com.messismo.bar.Services.*;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,8 @@ import java.util.Objects;
 public class ManagerController {
 
     private final ProductService productService;
+
+    private final ComboService comboService;
 
     private final UserService userService;
 
@@ -47,15 +50,15 @@ public class ManagerController {
     }
 
     @PutMapping("/product/updateCost")
-    public ResponseEntity<String> updateProductCost(@RequestBody ProductPriceDTO productPriceDTO) {
-        if (productPriceDTO.getUnitPrice() == null || productPriceDTO.getProductId() == null) {
+    public ResponseEntity<String> updateProductCost(@RequestBody ProductCostDTO productCostDTO) {
+        if (productCostDTO.getUnitCost() == null || productCostDTO.getProductId() == null) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Missing data to modify product cost");
         }
-        if (productPriceDTO.getUnitPrice() <= 0) {
+        if (productCostDTO.getUnitCost() <= 0) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Product cost CANNOT be less than 0.");
         }
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(productService.modifyProductCost(productPriceDTO));
+            return ResponseEntity.status(HttpStatus.OK).body(productService.modifyProductCost(productCostDTO));
         } catch (ProductNotFoundException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (Exception e) {
@@ -199,6 +202,44 @@ public class ManagerController {
         }
         try {
             return ResponseEntity.status(HttpStatus.OK).body(goalService.getGoals(goalFilterRequestDTO));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+
+    @PutMapping("/combo/updatePrice")
+    public ResponseEntity<String> updateComboPrice(@RequestBody ComboPriceDTO comboPriceDTO) {
+        System.out.println(comboPriceDTO);
+        if (comboPriceDTO.getPrice() == null || comboPriceDTO.getId() == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Missing data to modify product price");
+        }
+        if (comboPriceDTO.getPrice() <= 0) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Product price CANNOT be less than 0.");
+        }
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(comboService.modifyComboPrice(comboPriceDTO));
+        } catch (ProductNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
+
+    @PutMapping("/combo/updateProfit")
+    public ResponseEntity<String> updateComboProfit(@RequestBody ComboProfitDTO comboProfitDTO) {
+        System.out.println(comboProfitDTO);
+        if (comboProfitDTO.getProfit() == null || comboProfitDTO.getId() == null) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Missing data to modify product price");
+        }
+        if (comboProfitDTO.getProfit() <= 0) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Product price CANNOT be less than 0.");
+        }
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(comboService.modifyComboProfit(comboProfitDTO));
+        } catch (ProductNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }

@@ -113,63 +113,63 @@ public class ManagerControllerTests {
     @Test
     public void testUpdateProductCost_Success() throws Exception {
 
-        ProductPriceDTO validProductPriceDTO = new ProductPriceDTO(1L, 10.0);
-        when(productService.modifyProductCost(validProductPriceDTO)).thenReturn("Product cost modified successfully");
-        ResponseEntity<String> response = managerController.updateProductCost(validProductPriceDTO);
+        ProductCostDTO validProductCostDTO = new ProductCostDTO(1L, 10.0);
+        when(productService.modifyProductCost(validProductCostDTO)).thenReturn("Product cost modified successfully");
+        ResponseEntity<String> response = managerController.updateProductCost(validProductCostDTO);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Product cost modified successfully", response.getBody());
-        verify(productService, times(1)).modifyProductCost(validProductPriceDTO);
+        verify(productService, times(1)).modifyProductCost(validProductCostDTO);
 
     }
 
     @Test
     public void testUpdateProductCost_MissingData() throws Exception {
 
-        ProductPriceDTO invalidProductPriceDTO = new ProductPriceDTO(null, 10.0);
-        ResponseEntity<String> response = managerController.updateProductCost(invalidProductPriceDTO);
+        ProductCostDTO invalidProductCostDTO = new ProductCostDTO(null, 10.0);
+        ResponseEntity<String> response = managerController.updateProductCost(invalidProductCostDTO);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertEquals("Missing data to modify product cost", response.getBody());
-        verify(productService, never()).modifyProductCost(invalidProductPriceDTO);
+        verify(productService, never()).modifyProductCost(invalidProductCostDTO);
 
     }
 
     @Test
     public void testUpdateProductCost_InvalidCost() throws Exception {
 
-        ProductPriceDTO invalidProductPriceDTO = new ProductPriceDTO(1L, -5.0);
-        ResponseEntity<String> response = managerController.updateProductCost(invalidProductPriceDTO);
+        ProductCostDTO invalidProductCostDTO = new ProductCostDTO(1L, -5.0);
+        ResponseEntity<String> response = managerController.updateProductCost(invalidProductCostDTO);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertEquals("Product cost CANNOT be less than 0.", response.getBody());
-        verify(productService, never()).modifyProductCost(invalidProductPriceDTO);
+        verify(productService, never()).modifyProductCost(invalidProductCostDTO);
 
     }
 
     @Test
     public void testUpdateProductCost_ProductNotFound() throws Exception {
 
-        ProductPriceDTO validProductPriceDTO = new ProductPriceDTO(1L, 10.0);
-        when(productService.modifyProductCost(validProductPriceDTO)).thenThrow(new ProductNotFoundException("Product not found"));
-        ResponseEntity<String> response = managerController.updateProductCost(validProductPriceDTO);
+        ProductCostDTO invalidProductCostDTO = new ProductCostDTO(1L, 10.0);
+        when(productService.modifyProductCost(invalidProductCostDTO)).thenThrow(new ProductNotFoundException("Product not found"));
+        ResponseEntity<String> response = managerController.updateProductCost(invalidProductCostDTO);
 
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertEquals("Product not found", response.getBody());
-        verify(productService, times(1)).modifyProductCost(validProductPriceDTO);
+        verify(productService, times(1)).modifyProductCost(invalidProductCostDTO);
 
     }
 
     @Test
     public void testUpdateProductCost_InternalServerError() throws Exception {
 
-        ProductPriceDTO validProductPriceDTO = new ProductPriceDTO(1L, 10.0);
-        when(productService.modifyProductCost(validProductPriceDTO)).thenThrow(new Exception("Internal error"));
-        ResponseEntity<String> response = managerController.updateProductCost(validProductPriceDTO);
+        ProductCostDTO validProductCostDTO = new ProductCostDTO(1L, 10.0);
+        when(productService.modifyProductCost(validProductCostDTO)).thenThrow(new Exception("Internal error"));
+        ResponseEntity<String> response = managerController.updateProductCost(validProductCostDTO);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertEquals("Internal error", response.getBody());
-        verify(productService, times(1)).modifyProductCost(validProductPriceDTO);
+        verify(productService, times(1)).modifyProductCost(validProductCostDTO);
 
     }
 

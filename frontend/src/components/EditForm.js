@@ -22,7 +22,7 @@ const EditForm = (props) => {
   const [nombre, setNombre] = useState("");
   const [categoria, setCategoria] = useState("");
   const [descripcion, setDescripcion] = useState("");
-  const [precio, setPrecio] = useState("");
+  const [precio, setPrecio] = useState(props.product.unitPrice);
   const { user: currentUser } = useSelector((state) => state.auth);
   const token = currentUser.access_token;
   const role = currentUser.role;
@@ -32,6 +32,7 @@ const EditForm = (props) => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [alertText, setAlertText] = useState("");
   const [newStock, setNewStock] = useState(props.product.stock)
+  const [cost, setCost] = useState(props.product.unitCost);
   const handleNombreChange = (event) => {
     setNombre(event.target.value);
   };
@@ -48,6 +49,10 @@ const EditForm = (props) => {
     setPrecio(event.target.value);
   };
 
+  const handleCostChange = (event) => {
+    setCost(event.target.value);
+  };
+
   const handleStockChange = (event) => {
     setStock(event.target.value);
   };
@@ -60,6 +65,7 @@ const EditForm = (props) => {
     const validationErrors = EditFormValidation({
       price: precio,
       stock: stock,
+      cost: cost,
     });
 
     if (Object.keys(validationErrors).length > 0) {
@@ -84,6 +90,25 @@ const EditForm = (props) => {
           setOpenSnackbar(true);
         }
       }
+
+      if (cost !== "") {
+        try {
+          const response = await productsService
+            .updateProductCost(props.product.productId, cost)
+            .then((response) => {
+              console.log(response);
+              setIsOperationSuccessful(true);
+              setAlertText("Product updated successfully");
+              setOpenSnackbar(true);
+            });
+        } catch (error) {
+          setIsOperationSuccessful(false);
+          console.log(error)
+          setAlertText("Failed to modify cost");
+          setOpenSnackbar(true);
+        }
+      }
+      
 
       const stock = newProductStock();
       if (stock !== 0)
@@ -238,12 +263,54 @@ else {
             }}
           />
         </div>
+        
       ) : (
         <TextField
           disabled
           id="outlined-disabled"
           style={{ width: "80%" }}
           defaultValue={props.product.unitPrice}
+          InputProps={{
+            style: {
+              fontSize: "1.1rem",
+            },
+          }}
+        />
+      )}
+       <p>Cost</p>
+      {role === "ADMIN" || role === "MANAGER" ? (
+        <div>
+          <TextField
+            required
+            id="precio"
+            onChange={handleCostChange}
+            variant="outlined"
+            value={cost}
+            error={errors.price ? true : false}
+            helperText={errors.price || ""}
+            style={{ width: "80%", marginTop: "3%", marginBottom: "3%" }}
+            defaultValue={props.product.unitCost}
+            InputProps={{
+              style: {
+                fontSize: "1.1rem",
+                inputMode: "numeric",
+                pattern: "[0-9]*",
+              },
+            }}
+            FormHelperTextProps={{
+              style: {
+                fontSize: "1.1rem",
+              },
+            }}
+          />
+        </div>
+        
+      ) : (
+        <TextField
+          disabled
+          id="outlined-disabled"
+          style={{ width: "80%" }}
+          defaultValue={props.product.unitCost}
           InputProps={{
             style: {
               fontSize: "1.1rem",

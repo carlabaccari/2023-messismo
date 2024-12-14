@@ -1,5 +1,4 @@
 package com.messismo.bar.Entities;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -27,8 +26,6 @@ public class ProductCombo {
     @JsonIgnore
     private Product product;
 
-
-
     @Column(name = "quantity")
     private Integer quantity;
 
@@ -36,4 +33,13 @@ public class ProductCombo {
         this.product = product;
         this.quantity = quantity;
     }
+
+    public Double getTotalCost() {
+        if (this.product == null || this.product.getUnitCost() == null) {
+            return 0.0;
+        }
+        return this.product.getUnitCost() * this.quantity;
+    }
+
+
 }

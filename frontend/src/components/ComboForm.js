@@ -40,18 +40,13 @@ const ComboForm = (props) => {
       p.productId === product.productId ? { ...p, quantity: p.quantity + 1 } : p
     ));
   } else {
-    if (productExists) {
-        setSelectedProducts(prevProducts => prevProducts.map(p =>
-          p.productId === product.productId ? { ...p, quantity: p.quantity + 1 } : p
-        ));
-      } else {
-
-        
-        setSelectedProducts([...selectedProducts, { ...product, quantity: 1, unitCost: product.unitCost }]);
+    const unitCost = product.unitCost || 0;
+    console.log(product);
+        setSelectedProducts([...selectedProducts, { ...product, quantity: 1, unitCost: unitCost }]);
         console.log(selectedProducts);
       }
   }
-      };
+    
 
       const handleQuantityChange = (productId, newQuantity) => {
         setSelectedProducts((prevSelectedProducts) =>
@@ -215,39 +210,7 @@ const ComboForm = (props) => {
           }}
       />
       <p style={{ color: errors.category ? "red" : "black" }}>Products *</p>
-      <Select
-        labelId="demo-simple-select-label"
-        id="demo-simple-select"
-        multiple
-        value={selectedProducts}
-        onChange={handleProductChange}
-        error={errors.category ? true : false}
-        helperText={errors.category || ''}
-        style={{ width: '80%', marginTop: '3%', marginBottom: '3%', fontSize: '1.1rem'}}
-        renderValue={(selected) => (
-            <div>
-              {selected.map((product) => (
-                <Chip key={product.productId} label={`${product.name} x${product.quantity}`} />
-              ))}
-            </div>
-          )}
-          
-        InputProps={{
-          style: {
-            fontSize: '1.1rem',
-            }} }
-        FormHelperTextProps={{
-          style: {
-            fontSize: '1.1rem',
-          },
-        }}
-      >
-        {products.map(product => (
-          <MenuItem key={product.productId} value={product}>
-            {product.name}
-          </MenuItem>
-        ))}
-      </Select>
+     
       <Accordion>
     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
       <Typography>Productos</Typography>

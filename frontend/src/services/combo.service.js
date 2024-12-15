@@ -92,12 +92,28 @@ const getComboCost = (comboId) => {
   );
 };
 
+const deleteCombo = (comboId) => {
+  console.log("comboId", comboId)
+  return axios
+    .delete(
+      apiUrl + "/api/v1/manager/combo/deleteCombo/" + comboId,
+      {
+        headers: authHeader(),
+        method: "DELETE",
+        "Content-Type": "application/json",
+      }
+    )
+
+
+};
+
 const combosService = {
     getAllCombos,
     addCombos,
     updateComboPrice,
     updateComboProfit,
-    getComboCost
+    getComboCost,
+    deleteCombo
   };
   
   export default combosService;

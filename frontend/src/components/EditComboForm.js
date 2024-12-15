@@ -23,6 +23,8 @@ import RadioGroup from '@mui/material/RadioGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
 import combosService from "../services/combo.service";
+import ComboFormValidation from "../ComboFormValidation";
+import EditComboValidation from "../EditComboValidation";
 
 const EditComboForm = (props) => {
   const [precio, setPrecio] = useState(props.combo.price);
@@ -56,67 +58,63 @@ const EditComboForm = (props) => {
  
 
   const handleEditCombo = async () => {
-    const validationErrors = EditFormValidation({
-      price: precio,
-      profit: profit,
-    });
-
-    const comboId = props.combo.id
-    console.log(profit)
-    console.log(precio)
-
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      console.log(validationErrors);
-    } else {
-      if (selectedOption === 'Edit Price'){
+    const comboId = props.combo.id;
+  
+    try {
+      let response;
+  
+      if (selectedOption === "Edit Price") {
+        
+        const validationErrors = ComboFormValidation({ price: precio });
+        if (validationErrors.price) {
+          setErrors(validationErrors.price);
+          console.log(validationErrors);
+          return; 
+        }
+        setErrors({});
+  
+        
         const comboUpdated = {
           id: comboId,
-          price: precio
+          price: precio,
+        };
+        response = await combosService.updateComboPrice(comboUpdated);
+        console.log(response);
+        setIsOperationSuccessful(true);
+        setAlertText("Combo price updated successfully");
+      } else if (selectedOption === "Edit Profit") {
+        const validationErrors = ComboFormValidation({ profit: profit });
+        if (validationErrors.profit) {
+          setErrors(validationErrors);
+          console.log(validationErrors);
+          return; 
         }
-        try {
-            const response = await combosService
-              .updateComboPrice(comboUpdated)
-              .then((response) => {
-                console.log(response);
-                setIsOperationSuccessful(true);
-                setAlertText("Combo price updated successfully");
-                setOpenSnackbar(true);
-              });
-          } catch (error) {
-            console.error("Error", error);
-            setIsOperationSuccessful(false);
-            setAlertText("Failed to modify combo");
-            setOpenSnackbar(true);
-          }
-        }
-        else if ( selectedOption === 'Edit Profit'){
-          const comboUpdated = {
-            id: comboId,
-            profit: profit
-          }
-          try {
-              const response = await combosService
-                .updateComboProfit(comboUpdated)
-                .then((response) => {
-                  console.log(response);
-                  setIsOperationSuccessful(true);
-                  setAlertText("Combo price updated successfully");
-                  setOpenSnackbar(true);
-                });
-            } catch (error) {
-              console.error("Error", error);
-              setIsOperationSuccessful(false);
-              setAlertText("Failed to modify combo");
-              setOpenSnackbar(true);
-            }
-
-        }
+  
+    
+        const comboUpdated = {
+          id: comboId,
+          profit: profit,
+        };
+        response = await combosService.updateComboProfit(comboUpdated);
+        console.log(response);
+        setIsOperationSuccessful(true);
+        setAlertText("Combo profit updated successfully");
+      }
+  
+   
+      const updatedComboResponse = await combosService.getAllCombos();
+      props.setCombos(updatedComboResponse.data);
+      props.onClose();
+    } catch (error) {
+      console.error("Error", error);
+      setIsOperationSuccessful(false);
+      setAlertText("Failed to modify combo");
+    } finally {
+      setOpenSnackbar(true);
     }
-
-
   };
-
+  
+  
   
 
   const handleRadioChange = (event) => {

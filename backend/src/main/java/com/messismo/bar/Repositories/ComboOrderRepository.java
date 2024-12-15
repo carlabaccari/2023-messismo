@@ -6,4 +6,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ComboOrderRepository extends JpaRepository<ComboOrder, Long> {
 
+        boolean existsByComboId(Long comboId);
+
+
+
 }

@@ -275,77 +275,76 @@ const EditOrderForm = ({onCancel, orderId, onAdd}) => {
     }
 
     const orderSubmit = (data) => {
-        const orderedProducts = formField.map((form, index) => {
+        // Validar si hay al menos un producto o un combo con datos válidos
+        const hasValidProducts = formField.some((form, index) => {
             const productName = data[`product-${index}`];
-            const product = products.find(product => product.name === productName);
-            const amount = parseInt(data[`amount-${index}`]) || 0;
-
-            if (product && !isNaN(product.unitPrice) && !isNaN(amount)) {
-                return {
-                    id: product.id,
-                    name: product.name,
-                    unitPrice: parseFloat(product.unitPrice),
-                    description: product.description,
-                    stock: product.stock,
-                    category: product.category,
-                    amount: amount,
-                    unitCost: parseFloat(product.unitCost),
-                };
-            } else {
-                return null;
-            }
-        }).filter(product => product !== null);
-
-        const orderedCombos = comboField.map((form, index) => {
-            const comboName = data[`combo-${index}`];
-            const combo = combos.find(combo => combo.name === comboName);
-            const amount = parseInt(data[`amount-combo-${index}`]) || 0;
-
-            
+            const amount = parseInt(data[`amount-${index}`]);
+            return productName && amount > 0;
+        });
     
-            if (combo && !isNaN(combo.price) && !isNaN(amount)) {
-                return {
-                    id: combo.id,
-                    name: combo.name,
-                    price: combo.price,
-                    profit: combo.profit,
-                    amount: amount,
-                    products: combo.products
-                };
-            } else {
-                return null;
-            }
-        }).filter(combo => combo !== null);
-
-
-        const totalPrice = orderedProducts.reduce((total, product) => {
-            return total + product.unitPrice * product.amount;
-        }, 0);
-
-        
-        const totalCost = orderedProducts.reduce((total, product) => {
-            return total + product.unitCost * product.amount;
-        }, 0);
-
-      
-
-        /*const orderDataNew = {
-            orderId: orderId,
-            productOrders: orderedProducts.map(product => ({
-                product,
-                quantity: product.amount
-            })),
-            comboOrders: orderedCombos.map(combo => ({
-                combo,
-                quantity: combo.amount
-            }))
-        };*/
-
+        const hasValidCombos = comboField.some((form, index) => {
+            const comboName = data[`combo-${index}`];
+            const amount = parseInt(data[`amount-combo-${index}`]);
+            return comboName && amount > 0;
+        });
+    
+        if (!hasValidProducts && !hasValidCombos) {
+            alert("Debe seleccionar al menos un producto o un combo válido.");
+            return; // Termina la ejecución si no hay datos válidos
+        }
+    
+        // Mapear productos ordenados
+        const orderedProducts = formField
+            .map((form, index) => {
+                const productName = data[`product-${index}`];
+                const product = products.find((product) => product.name === productName);
+                const amount = parseInt(data[`amount-${index}`]) || 0;
+    
+                if (product && !isNaN(product.unitPrice) && !isNaN(amount)) {
+                    return {
+                        id: product.id,
+                        name: product.name,
+                        unitPrice: parseFloat(product.unitPrice),
+                        description: product.description,
+                        stock: product.stock,
+                        category: product.category,
+                        amount: amount,
+                        unitCost: parseFloat(product.unitCost),
+                    };
+                } else {
+                    return null;
+                }
+            })
+            .filter((product) => product !== null);
+    
+        // Mapear combos ordenados
+        const orderedCombos = comboField
+            .map((form, index) => {
+                const comboName = data[`combo-${index}`];
+                const combo = combos.find((combo) => combo.name === comboName);
+                const amount = parseInt(data[`amount-combo-${index}`]) || 0;
+    
+                if (combo && !isNaN(combo.price) && !isNaN(amount)) {
+                    return {
+                        id: combo.id,
+                        name: combo.name,
+                        price: combo.price,
+                        profit: combo.profit,
+                        amount: amount,
+                        products: combo.products,
+                    };
+                } else {
+                    return null;
+                }
+            })
+            .filter((combo) => combo !== null);
+    
+        // Construir datos de la orden
         const orderDataNew = {
             orderId: orderId,
-            productOrders: orderedProducts.map(product => ({
+            productOrders: orderedProducts.map((product) => ({
                 product: {
-                    productId: product.id, // Asegúrate de incluir el ID
+                    productId: product.id,
                     name: product.name,
                     unitPrice: product.unitPrice,
                     description: product.description,
@@ -355,53 +354,45 @@ const EditOrderForm = ({onCancel, orderId, onAdd}) => {
                 },
                 quantity: product.amount,
             })),
-            comboOrders: orderedCombos.map(combo => ({
+            comboOrders: orderedCombos.map((combo) => ({
                 combo: {
-                  id: combo.id,
-                  name: combo.name,
-                  products: combo.products.map((productCombo) => {
-                    const fullProduct = products.find(
-                      (p) => p.id === productCombo.productId
-                    );
-                    console.log(products);
-                    console.log(productCombo.productId);
-                    console.log(fullProduct);
-                    return {
-                      id: null, // El ID del `ProductCombo` si está disponible
-                      comboId: combo.id, // El ID del combo
-                      product: {
-                        productId: fullProduct?.id,
-                        name: fullProduct?.name,
-                        unitPrice: fullProduct?.unitPrice,
-                        unitCost: fullProduct?.unitCost,
-                        description: fullProduct?.description,
-                        stock: fullProduct?.stock,
-                        category: fullProduct?.category,
-                    },
-                    quantity: productCombo.quantity, // La cantidad específica del producto en el combo
-                    }; }),
+                    id: combo.id,
+                    name: combo.name,
+                    products: combo.products.map((productCombo) => {
+                        const fullProduct = products.find((p) => p.id === productCombo.productId);
+                        return {
+                            id: null, // ID del `ProductCombo` si está disponible
+                            comboId: combo.id, // ID del combo
+                            product: {
+                                productId: fullProduct?.id,
+                                name: fullProduct?.name,
+                                unitPrice: fullProduct?.unitPrice,
+                                unitCost: fullProduct?.unitCost,
+                                description: fullProduct?.description,
+                                stock: fullProduct?.stock,
+                                category: fullProduct?.category,
+                            },
+                            quantity: productCombo.quantity,
+                        };
+                    }),
                     price: combo.price,
                     profit: combo.profit,
                 },
                 quantity: combo.amount,
             })),
         };
-
-         console.log(orderDataNew);
-        
     
-  
-
+        // Enviar la orden al backend
         ordersService.modifyOrder(orderDataNew)
-        .then(response => {
-            console.log("Orden enviada con éxito:", response.data);
-            onCancel();
-        })
-        .catch(error => {
-            console.error("Error al enviar la orden:", error);
-        });
-       
+            .then((response) => {
+                console.log("Orden enviada con éxito:", response.data);
+                onCancel();
+            })
+            .catch((error) => {
+                console.error("Error al enviar la orden:", error);
+            });
     };
+    
 
     const handleAddProductsClick = () => {
             orderSubmit();
@@ -440,7 +431,7 @@ const EditOrderForm = ({onCancel, orderId, onAdd}) => {
                                 name={`product-${index}`}
                                 control={control}
                                 defaultValue=""
-                                {...register(`product-${index}`, { required: true })}
+                                {...register(`product-${index}`)}
                                 render={({ field }) => (
                                     <Select
                                         {...field}
@@ -480,7 +471,7 @@ const EditOrderForm = ({onCancel, orderId, onAdd}) => {
                                 name={`amount-${index}`}
                                 type="number"
                                 {...register(`amount-${index}`, {
-                                    required: true,
+                                    
                                     min: 1,
                                     max: productStocks[selectedProducts[`product-${index}`]] || 1
                                 })}
@@ -551,7 +542,7 @@ const EditOrderForm = ({onCancel, orderId, onAdd}) => {
                 name={`combo-${index}`}
                 control={control}
                 defaultValue=""
-                {...register(`combo-${index}`, { required: true })}
+                {...register(`combo-${index}`)}
                 render={({ field }) => (
                     <Select
                         {...field}
@@ -586,7 +577,7 @@ const EditOrderForm = ({onCancel, orderId, onAdd}) => {
                 name={`amount-combo-${index}`}
                 type="number"
                 {...register(`amount-combo-${index}`, {
-                    required: true,
+                    
                     min: 1
                 })}
             />

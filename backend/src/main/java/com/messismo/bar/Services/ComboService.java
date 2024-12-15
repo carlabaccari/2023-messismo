@@ -2,8 +2,10 @@ package com.messismo.bar.Services;
 
 import com.messismo.bar.DTOs.*;
 import com.messismo.bar.Entities.*;
+import com.messismo.bar.Exceptions.ComboInOrderException;
 import com.messismo.bar.Exceptions.ComboNotFoundException;
 import com.messismo.bar.Exceptions.ProductNotFoundException;
+import com.messismo.bar.Repositories.ComboOrderRepository;
 import com.messismo.bar.Repositories.ComboRepository;
 import com.messismo.bar.Repositories.ProductComboRepository;
 import com.messismo.bar.Repositories.ProductRepository;
@@ -24,6 +26,8 @@ public class ComboService {
     private final ProductRepository productRepository;
 
     private final ProductComboRepository productComboRepository;
+
+    private final ComboOrderRepository comboOrderRepository;
 
     public Combo addCombo(ComboDTO comboDTO) throws Exception, ExistingComboNameFoundException {
         try {
@@ -108,16 +112,26 @@ public class ComboService {
 
     public String deleteCombo(Long id) throws Exception {
         try {
+            System.out.println(id);
             Combo combo = comboRepository.findById(id).orElseThrow(() -> new ComboNotFoundException("Combo ID DOES NOT match any combo ID"));
+            System.out.println(combo);
+
+            boolean isComboInOrder = comboOrderRepository.existsByComboId(id);// Este método debe ser implementado en el repositorio
+            System.out.println(isComboInOrder);
+            if (isComboInOrder) {
+                throw new ComboInOrderException("Combo cannot be deleted as it is part of an order");
+            }
+
+
             comboRepository.delete(combo);
             return "Combo deleted successfully";
-        } catch (ComboNotFoundException e) {
+        } catch (ComboNotFoundException | ComboInOrderException e) {
             throw e;
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             throw new Exception("Combo CANNOT be deleted");
         }
     }
+
 
     public String modifyComboPrice(ComboPriceDTO comboPriceDTO) throws Exception {
         try {

@@ -174,13 +174,13 @@ public class ProductServiceTests {
     @Test
     public void testProductServiceModifyUnitCostProduct_NotFound() {
 
-        ProductPriceDTO productPriceDTO = new ProductPriceDTO(10L, 50.00);
+        ProductCostDTO productCostDTO = new ProductCostDTO(10L, 50.00);
 
         ProductNotFoundException exception = assertThrows(ProductNotFoundException.class, () -> {
-            productService.modifyProductCost(productPriceDTO);
+            productService.modifyProductCost(productCostDTO);
         });
         Assertions.assertEquals("ProductId DOES NOT match any productId", exception.getMessage());
-        verify(productRepository, times(1)).findByProductId(productPriceDTO.getProductId());
+        verify(productRepository, times(1)).findByProductId(productCostDTO.getProductId());
 
     }
 

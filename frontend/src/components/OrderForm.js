@@ -357,140 +357,139 @@ const OrderForm = ({ onCancel }) => {
     
 
     const orderSubmit = async (data) => {
-        const orderedProducts = formField.map((form, index) => {
-            const productName = data[`product-${index}`];
-            const product = products.find(product => product.name === productName);
-            const amount = parseInt(data[`amount-${index}`]) || 0;
-            if (product && !isNaN(product.unitPrice) && !isNaN(amount) && !isNaN(product.unitCost)) {
-                return {
-                    id: product.id,
-                    name: product.name,
-                    unitPrice: parseFloat(product.unitPrice),
-                    description: product.description,
-                    stock: product.stock,
-                    category: product.category,
-                    amount: amount,
-                    unitCost: parseFloat(product.unitCost)
-                };
-            } else {
-                return null;
-            }
-        }).filter(product => product !== null);
-        
-        const orderedCombos = comboField.map((form, index) => {
-          
-          const comboName = data[`combo-${index}`];
-          const combo = combos.find(combo => combo.name === comboName);
-          const amount = parseInt(data[`amount-combo-${index}`]) || 0;
-          if (combo && !isNaN(combo.price) && !isNaN(amount)) {
-              return {
-                  id: combo.id,
-                  name: combo.name,
-                  products: combo.products,
-                  price: parseFloat(combo.price),
-                  profit: combo.profit,
-                  amount: amount,
-              };
-          } else {
-              return null;
-          }
-      }).filter(combo => combo !== null);
-
-        const totalPriceCombo = orderedCombos.reduce((total, combo) => {
-        return total + combo.price * combo.amount;
-      }, 0);
-
-  
-
-        const totalPriceProducts = orderedProducts.reduce((total, product) => {
-            return total + product.unitPrice * product.amount;
-        }, 0);
-
-        const totalPrice = totalPriceCombo + totalPriceProducts
-
-        const totalCostProduct = orderedProducts.reduce((total, product) => {
-          
-            return total + product.unitCost * product.amount;
-        }, 0);
-
-       
-        const totalCostCombo = await calculateTotalComboCost(orderedCombos);
-      
-        const totalOrderCost = totalCostProduct + totalCostCombo;
-          
+      // Validar si al menos uno de los dos, `products` o `combos`, tiene valores válidos
+      const hasValidProducts = formField.some((form, index) => {
+        const productName = data[`product-${index}`];
+        const amount = parseInt(data[`amount-${index}`]);
+        return productName && amount > 0;
+      });
     
-
-    const totalCost = orderedProducts.reduce((total, product) => {
- 
-      return total + product.unitCost * product.amount;
-    }, 0);
-
-    console.log('ORDENES')
-    console.log(orderedCombos)
-    const orderData = {
-      registeredEmployeeEmail: currentUser.email,
-      dateCreated: new Date().toISOString(),
-      productOrders: orderedProducts.map((product) => ({
-        product: {
-          productId: product.id,
-          name: product.name,
-          unitPrice: product.unitPrice,
-          description: product.description,
-          stock: product.stock,
-          category: product.category,
-          unitCost: product.unitCost,
-        },
-        quantity: product.amount,
-      })),
-     
-      comboOrders: orderedCombos.map(combo => ({
-        combo: {
-          id: combo.id,
-          name: combo.name,
-          products: combo.products.map((productCombo) => {
-            const fullProduct = products.find(
-              (p) => p.id === productCombo.productId
-            );
-            console.log(products);
-            console.log(productCombo.productId);
-            console.log(fullProduct);
+      const hasValidCombos = comboField.some((form, index) => {
+        const comboName = data[`combo-${index}`];
+        const amount = parseInt(data[`amount-combo-${index}`]);
+        return comboName && amount > 0;
+      });
+    
+      if (!hasValidProducts && !hasValidCombos) {
+        console.error("Debe seleccionar al menos un producto o un combo");
+        alert("Debe seleccionar al menos un producto o un combo");
+        return; // Termina el proceso de envío si no hay valores válidos
+      }
+    
+      // Procesar los datos si pasa la validación
+      const orderedProducts = formField
+        .map((form, index) => {
+          const productName = data[`product-${index}`];
+          const product = products.find((product) => product.name === productName);
+          const amount = parseInt(data[`amount-${index}`]) || 0;
+          if (product && !isNaN(product.unitPrice) && !isNaN(amount)) {
             return {
-              id: null, // El ID del `ProductCombo` si está disponible
-              comboId: combo.id, // El ID del combo
-              product: {
-                productId: fullProduct?.id,
-                name: fullProduct?.name,
-                unitPrice: fullProduct?.unitPrice,
-                unitCost: fullProduct?.unitCost,
-                description: fullProduct?.description,
-                stock: fullProduct?.stock,
-                category: fullProduct?.category,
-            },
-            quantity: productCombo.quantity, // La cantidad específica del producto en el combo
-        };
-      }),
-          price: combo.price,
-          profit: combo.profit,
-        },
-        quantity: combo.amount
-      })),
-      totalPrice: totalPrice.toFixed(2),
-      totalCost: totalOrderCost.toFixed(2),
-    };
-
-    ordersService
-      .addOrders(orderData)
-      .then((response) => {
+              id: product.id,
+              name: product.name,
+              unitPrice: parseFloat(product.unitPrice),
+              unitCost: parseFloat(product.unitCost),
+              description: product.description,
+              stock: product.stock,
+              category: product.category,
+              amount: amount,
+            };
+          }
+          return null;
+        })
+        .filter((product) => product !== null);
+    
+      const orderedCombos = comboField
+        .map((form, index) => {
+          const comboName = data[`combo-${index}`];
+          const combo = combos.find((combo) => combo.name === comboName);
+          const amount = parseInt(data[`amount-combo-${index}`]) || 0;
+    
+          // Validar que el combo exista y tenga una cantidad válida
+          if (combo && amount > 0) {
+            return {
+              id: combo.id,
+              name: combo.name,
+              price: parseFloat(combo.price),
+              products: combo.products.map((productCombo) => {
+                const productDetails = products.find(
+                  (product) => product.id === productCombo.productId
+                );
+                return {
+                  id: productCombo.id || null,
+                  comboId: combo.id,
+                  product: productDetails
+                    ? {
+                        productId: productDetails.id,
+                        name: productDetails.name,
+                        unitPrice: productDetails.unitPrice,
+                        unitCost: productDetails.unitCost,
+                        description: productDetails.description,
+                        stock: productDetails.stock,
+                        category: productDetails.category,
+                      }
+                    : null,
+                  quantity: productCombo.quantity || 0,
+                };
+              }),
+              profit: combo.profit,
+              amount: amount,
+            };
+          }
+          return null;
+        })
+        .filter((combo) => combo !== null); // Eliminar combos inválidos
+    
+      const totalPriceCombo = orderedCombos.reduce(
+        (total, combo) => total + combo.price * combo.amount,
+        0
+      );
+    
+      const totalPriceProducts = orderedProducts.reduce(
+        (total, product) => total + product.unitPrice * product.amount,
+        0
+      );
+    
+      const totalPrice = totalPriceCombo + totalPriceProducts;
+    
+      const orderData = {
+        registeredEmployeeEmail: currentUser.email,
+        dateCreated: new Date().toISOString(),
+        productOrders: orderedProducts.map((product) => ({
+          product: {
+            productId: product.id,
+            name: product.name,
+            unitPrice: product.unitPrice,
+            unitCost: product.unitCost,
+            description: product.description,
+            stock: product.stock,
+            category: product.category,
+          },
+          quantity: product.amount,
+        })),
+        comboOrders: orderedCombos.map((combo) => ({
+          combo: {
+            id: combo.id,
+            name: combo.name,
+            products: combo.products,
+            price: combo.price,
+            profit: combo.profit,
+          },
+          quantity: combo.amount,
+        })),
+        totalPrice: totalPrice.toFixed(2),
+      };
+    
+      try {
+        const response = await ordersService.addOrders(orderData);
         console.log("Orden enviada con éxito:", response.data);
         onCancel();
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error("Error al enviar la orden:", error);
-      });
-
-    console.log(orderData);
-    console.log("Order Data to be sent:", JSON.stringify(orderData, null, 2));
-  };
+      }
+    };
+    
+    
+    
 
   const validateComboMaxStock = (comboName, comboAmount) => {
     const combo = combos.find((c) => c.name === comboName);
@@ -554,7 +553,7 @@ const OrderForm = ({ onCancel }) => {
             name={`product-${index}`}
             control={control}
             defaultValue=""
-            {...register(`product-${index}`, { required: true })}
+            {...register(`product-${index}`)}
             render={({ field }) => (
               <Select
                 {...field}
@@ -603,7 +602,6 @@ const OrderForm = ({ onCancel }) => {
               name={`amount-${index}`}
               type="number"
               {...register(`amount-${index}`, {
-                required: true,
                 min: 1,
                 max: calculateMaxProductStock(
                   selectedProducts[`product-${index}`],
@@ -676,7 +674,7 @@ const OrderForm = ({ onCancel }) => {
             name={`combo-${index}`}
             control={control}
             defaultValue=""
-            {...register(`combo-${index}`, { required: true })}
+            {...register(`combo-${index}`)}
             render={({ field }) => (
               <Select
                 {...field}
@@ -725,7 +723,6 @@ const OrderForm = ({ onCancel }) => {
             name={`amount-combo-${index}`}
             type="number"
             {...register(`amount-combo-${index}`, {
-              required: true,
               min: 1,
               validate: (value) =>
                 validateComboMaxStock(selectedCombos[`combo-${index}`], value) ||

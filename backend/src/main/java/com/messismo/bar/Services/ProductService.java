@@ -92,6 +92,14 @@ public class ProductService {
             Product product = productRepository.findByProductId(productCostDTO.getProductId()).orElseThrow(() -> new ProductNotFoundException("ProductId DOES NOT match any productId"));
             product.updateUnitCost(productCostDTO.getUnitCost());
             productRepository.save(product);
+
+            List<Combo> affectedCombos = comboRepository.findByProducts_Product(productCostDTO.getProductId());
+            for (Combo combo : affectedCombos) {
+                combo.recalculateProfit();
+                comboRepository.save(combo);
+            }
+
+
             return "Product cost updated successfully";
         } catch (ProductNotFoundException e) {
             throw e;

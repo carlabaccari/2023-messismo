@@ -200,8 +200,7 @@ const Form = (props) => {
             fontSize: '1.1rem', 
           },}}
         inputProps= {{
-            maxLength: 255 // Establecer la longitud máxima permitida
-          }}
+            maxLength: 255 }}
       />
       <p style={{ fontSize: "1rem", color: characterCount > maxCharacterLimit ? "red" : "black" }}>
         {characterCount}/{maxCharacterLimit}

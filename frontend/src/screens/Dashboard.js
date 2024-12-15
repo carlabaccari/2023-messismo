@@ -558,6 +558,7 @@ function Dashboard() {
   let abbreviatedRevenue = 0;
   let totalOrders = 0;
   let totalProducts = 0;
+  let totalCombos = 0;
   let totalCategories = 0;
 
   if (dashboardData.data) {
@@ -570,7 +571,24 @@ function Dashboard() {
       (a, b) => a + b,
       0
     );
-    totalProducts = totalproducts.length;
+
+    totalProducts = 0; 
+    if (dashboardData.data.quantityProductDonut) {
+      totalProducts = Object.values(dashboardData.data.quantityProductDonut).reduce(
+        (a, b) => a + b,
+        0
+      );
+    }
+
+    totalCombos = 0;
+    if (dashboardData.data.quantityComboDonut) {
+      totalCombos = Object.values(dashboardData.data.quantityComboDonut).reduce(
+        (a, b) => a + b,
+        0
+      );
+    }
+
+    
     totalCategories = categories.length;
   }
   const handleCategoryChange = (event) => {
@@ -696,6 +714,10 @@ function Dashboard() {
               <Stat className="total-products">
                 <p className="statnumber">{totalProducts}</p>
                 <p className="stattext">Products</p>
+              </Stat>
+              <Stat className="total-products">
+                <p className="statnumber">{totalCombos}</p>
+                <p className="stattext">Combos</p>
               </Stat>
               <Stat className="total-categories">
                 <p className="statnumber">{totalCategories}</p>

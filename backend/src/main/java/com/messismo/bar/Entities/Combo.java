@@ -67,6 +67,22 @@ public class Combo {
 
     }
 
+    public void recalculateProfit() {
+        System.out.println("Recalculating profit");
+
+        double totalCost = this.products.stream()
+                .mapToDouble(productCombo ->
+                        productCombo.getProduct().getUnitCost() * productCombo.getQuantity()
+                )
+                .sum();
+
+        if (totalCost <= 0.00) {
+            throw new IllegalArgumentException("Total cost must be greater than 0.00");
+        }
+
+        this.profit = ((this.price - totalCost) / totalCost) * 100;
+    }
+
     public Double getTotalCost() {
         return products.stream()
                 .mapToDouble(ProductCombo::getTotalCost)

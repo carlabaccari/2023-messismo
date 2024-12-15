@@ -95,6 +95,17 @@ public class ManagerController {
         }
     }
 
+    @DeleteMapping("/combo/deleteCombo/{comboId}")
+    public ResponseEntity<String> deleteCombo(@PathVariable Long comboId) {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(comboService.deleteCombo(comboId));
+        } catch (ProductNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
+
     @GetMapping("/getAllEmployees")
     public ResponseEntity<?> getAllEmployees() {
         return ResponseEntity.status(HttpStatus.OK).body(userService.getAllEmployees());

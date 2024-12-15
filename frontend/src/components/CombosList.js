@@ -197,11 +197,13 @@ const [isLoading, setIsLoading] = useState(true);
 
   const handleSaveCombo = async (newComboData) => {
     try {
-      const response = await addComboAsync(newComboData);
-      console.log(response)
+      const response = await addComboAsync(newComboData); // Llama a la función que lanza errores si falla
+      console.log(response);
+  
+      // Solo si la función no lanza error se ejecuta este bloque
       setIsOperationSuccessful(true);
-      setAlertText("Product added successfully!");
-
+      setAlertText("Combo added successfully!");
+  
       const updatedComboResponse = await combosService.getAllCombos();
       setCombos(updatedComboResponse.data);
       setFilteredCombos(updatedComboResponse.data);
@@ -214,11 +216,20 @@ const [isLoading, setIsLoading] = useState(true);
       setOpenSnackbar(true);
     }
   };
+  
 
   const addComboAsync = async (newComboData) => {
-    return combosService.addCombos(newComboData);
+    try {
+      const response = await combosService.addCombos(newComboData);
+      if (response.status >= 200 && response.status < 300) {
+        return response; // Retorna solo si el estado es exitoso
+      } else {
+        throw new Error(`Error en la API: ${response.status} ${response.statusText}`);
+      }
+    } catch (error) {
+      throw error; // Lanza el error para que sea capturado en el bloque catch de handleSaveCombo
+    }
   };
-
   const handleEditCombo = () => {
     handleCloseEditForm();
     setIsEditFormOpen(false);

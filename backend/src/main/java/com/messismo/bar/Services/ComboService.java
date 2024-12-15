@@ -31,6 +31,7 @@ public class ComboService {
 
     public Combo addCombo(ComboDTO comboDTO) throws Exception, ExistingComboNameFoundException {
         try {
+
             Optional<Combo> existingCombo = comboRepository.findByName(comboDTO.getName());
             if (existingCombo.isPresent()) {
                 throw new ExistingComboNameFoundException("This name is already in use");
@@ -47,9 +48,6 @@ public class ComboService {
                     Product product = productOptional.get();
                     ProductCombo productCombo = new ProductCombo(product, quantity);
                     productCombos.add(productCombo);
-
-
-                    productCombos.add(productCombo);
                 }
             }
 
@@ -60,8 +58,7 @@ public class ComboService {
                 }
             }
 
-
-
+            // Crear el combo
             Combo combo = new Combo(
                     comboDTO.getName(),
                     productCombos,
@@ -71,14 +68,13 @@ public class ComboService {
 
             return comboRepository.save(combo);
 
-
-
         } catch (ExistingComboNameFoundException e) {
             throw e;
         } catch (Exception e) {
             throw new Exception("Combo was not created", e);
         }
     }
+
 
     public List<ComboDTO> getAllCombos() {
         List<Combo> combos = comboRepository.findAllWithProducts();
@@ -160,24 +156,24 @@ public class ComboService {
         }
     }
 
-    private boolean isSameProductCombination(List<ProductCombo> existingProducts, List<ProductCombo> newProducts) {
-        if (existingProducts.size() != newProducts.size()) {
+    private boolean isSameProductCombination(List<ProductCombo> existingCombos, List<ProductCombo> newCombos) {
+        if (existingCombos.size() != newCombos.size()) {
             return false;
         }
+        
+        existingCombos.sort(Comparator.comparing(pc -> pc.getProduct().getProductId()));
+        newCombos.sort(Comparator.comparing(pc -> pc.getProduct().getProductId()));
+
+        for (int i = 0; i < existingCombos.size(); i++) {
+            ProductCombo existing = existingCombos.get(i);
+            ProductCombo newCombo = newCombos.get(i);
 
 
-        Map<Long, Integer> existingProductMap = new HashMap<>();
-        for (ProductCombo pc : existingProducts) {
-            existingProductMap.put(pc.getProduct().getProductId(), pc.getQuantity());
-        }
-
-        for (ProductCombo pc : newProducts) {
-            if (!existingProductMap.containsKey(pc.getProduct().getProductId()) ||
-                    !existingProductMap.get(pc.getProduct().getProductId()).equals(pc.getQuantity())) {
+            if (!existing.getProduct().getProductId().equals(newCombo.getProduct().getProductId()) ||
+                    !existing.getQuantity().equals(newCombo.getQuantity())) {
                 return false;
             }
         }
-
         return true;
     }
 

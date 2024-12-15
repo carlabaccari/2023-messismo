@@ -34,7 +34,7 @@ public class OrderService {
                 newProductOrderListDTO = createProductOrder(orderRequestDTO.getProductOrders());
             }
 
-            // Crear órdenes de combos (si hay combos)
+
             NewComboOrderListDTO newComboOrderListDTO = new NewComboOrderListDTO(new ArrayList<>(), 0.0, 0.0);
             if (orderRequestDTO.getComboOrders() != null && !orderRequestDTO.getComboOrders().isEmpty()) {
                 newComboOrderListDTO = createComboOrder(orderRequestDTO.getComboOrders());
@@ -70,11 +70,31 @@ public class OrderService {
 
     public String modifyOrder(ModifyOrderDTO modifyOrderDTO) throws Exception {
         try {
+            System.out.println(modifyOrderDTO);
             Order order = orderRepository.findById(modifyOrderDTO.getOrderId()).orElseThrow(() -> new OrderNotFoundException("Order not found"));
-            NewProductOrderListDTO newProductOrderListDTO = createProductOrder(modifyOrderDTO.getProductOrders());
+            NewProductOrderListDTO newProductOrderListDTO = new NewProductOrderListDTO(new ArrayList<>(), 0.0, 0.0);
+            NewComboOrderListDTO newComboOrderListDTO = new NewComboOrderListDTO(new ArrayList<>(), 0.0, 0.0);
+
+
+            if (modifyOrderDTO.getProductOrders() != null && !modifyOrderDTO.getProductOrders().isEmpty()) {
+                newProductOrderListDTO = createProductOrder(modifyOrderDTO.getProductOrders());
+            }
+
+
+            if (modifyOrderDTO.getComboOrders() != null && !modifyOrderDTO.getComboOrders().isEmpty()) {
+                newComboOrderListDTO = createComboOrder(modifyOrderDTO.getComboOrders());
+            }
             order.updateProductOrders(newProductOrderListDTO.getProductOrderList());
-            order.updateTotalPrice(newProductOrderListDTO.getTotalPrice());
-            order.updateTotalCost(newProductOrderListDTO.getTotalCost());
+            order.updateComboOrders(newComboOrderListDTO.getComboOrderList());
+
+            double totalPrice = newProductOrderListDTO.getTotalPrice() + newComboOrderListDTO.getTotalPrice();
+            double totalCost = newProductOrderListDTO.getTotalCost() + newComboOrderListDTO.getTotalCost();
+
+            order.updateTotalPrice(totalPrice);
+            order.updateTotalCost(totalCost);
+            System.out.println(newComboOrderListDTO);
+            System.out.println(newProductOrderListDTO);
+            System.out.println(order);
             orderRepository.save(order);
             return "Order modified successfully";
         } catch (ProductQuantityBelowAvailableStock | OrderNotFoundException e) {

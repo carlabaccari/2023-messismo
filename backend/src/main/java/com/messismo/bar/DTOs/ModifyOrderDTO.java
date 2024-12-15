@@ -17,4 +17,6 @@ public class ModifyOrderDTO {
 
     private List<ProductOrderDTO> productOrders;
 
+    private List<ComboOrderDTO> comboOrders;
+
 }

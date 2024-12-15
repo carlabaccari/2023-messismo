@@ -62,6 +62,7 @@ public class Order {
             this.user = user;
             this.dateCreated = dateCreated;
             this.productOrders = productOrders;
+            this.comboOrders = comboOrders;
             this.totalPrice= totalPrice;
             this.totalCost=totalCost;
             this.status="Open";
@@ -75,6 +76,11 @@ public class Order {
     public void updateProductOrders(List<ProductOrder> productOrderList) {
         this.productOrders.addAll(productOrderList);
     }
+
+    public void updateComboOrders(List<ComboOrder> comboOrderList) {
+        this.comboOrders.addAll(comboOrderList);
+    }
+
 
     public void updateTotalPrice(Double totalPrice) {
         if(totalPrice<=0.00){

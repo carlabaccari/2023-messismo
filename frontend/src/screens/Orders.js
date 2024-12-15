@@ -223,6 +223,7 @@ function Orders() {
   const [alertText, setAlertText] = useState("");
   const [isOperationSuccessful, setIsOperationSuccessful] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [comboOrderRows, setComboOrderRows] = useState([]);
 
   const theme = useTheme();
   const matches = useMediaQuery(theme.breakpoints.up("sm"));
@@ -242,6 +243,7 @@ function Orders() {
       .getAllOrders()
       .then((response) => {
         setOrders(response.data);
+        console.log(response.data);
         setIsLoading(false);
         console.log("done");
       })
@@ -293,7 +295,9 @@ function Orders() {
 
   const handleViewDetails = (orderId) => {
     const selectedOrder = orders.find((order) => order.id === orderId);
+    console.log(selectedOrder);
     setSelectedOrderDetails(selectedOrder.productOrders);
+    setComboOrderRows(selectedOrder.comboOrders);
     setSelectedTotalPrice(selectedOrder.totalPrice);
     setDetailsVisible(true);
   };
@@ -474,6 +478,7 @@ function Orders() {
                   onCancel={handleCloseEditOrderForm}
                   orderId={orderIdToEdit}
                   orderDetails={selectedOrderDetails}
+                  comboDetails={comboOrderRows}
                   totalPrice={selectedTotalPrice}
                   onClose={handleCloseEditOrderForm}
                 />
@@ -597,6 +602,18 @@ function Orders() {
                         </strong>
                         <br />
                         <strong>${productOrder.productUnitPrice} ea.</strong>
+                        <br />
+                        <strong></strong>
+                        <br />
+                      </div>
+                    ))}
+                    {comboOrderRows.map((comboOrder) => (
+                      <div key={comboOrder.comboOrderId}>
+                        <strong>
+                          {comboOrder.quantity}x {comboOrder.comboName}
+                        </strong>
+                        <br />
+                        <strong>${comboOrder.comboUnitPrice} ea.</strong>
                         <br />
                         <strong></strong>
                         <br />

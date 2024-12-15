@@ -44,5 +44,8 @@ public class ComboOrder {
         }
     }
 
-
+    @Override
+    public String toString() {
+        return "ComboOrder{" + "comboOrderId=" + comboOrderId + ", combo=" + comboName + ", quantity=" + quantity + '}';
+    }
 }

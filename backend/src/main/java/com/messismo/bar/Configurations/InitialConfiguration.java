@@ -39,7 +39,7 @@ public class InitialConfiguration {
             System.out.println("ADDED CATEGORIES");
             addSampleProducts(productService);
             System.out.println("ADDED PRODUCTS");
-            addSampleOrders(orderService, productRepository);
+            //addSampleOrders(orderService, productRepository);
             System.out.println("ADDED ORDERS");
             closeOrders(orderRepository);
             System.out.println("CLOSED ORDERS");

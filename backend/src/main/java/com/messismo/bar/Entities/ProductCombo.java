@@ -23,7 +23,6 @@ public class ProductCombo {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", referencedColumnName = "product_id")
-    @JsonIgnore
     private Product product;
 
     @Column(name = "quantity")
@@ -39,6 +38,14 @@ public class ProductCombo {
             return 0.0;
         }
         return this.product.getUnitCost() * this.quantity;
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
     }
 
 

@@ -85,11 +85,19 @@ const updateComboProfit = (modifiedCombo) => {
   });
 };
 
+const getComboCost = (comboId) => {
+  return axios.get(
+    apiUrl + "/api/v1/validatedEmployee/getComboCost/" + comboId,
+    { headers: authHeader(), method: "GET", "Content-Type": "application/json" }
+  );
+};
+
 const combosService = {
     getAllCombos,
     addCombos,
     updateComboPrice,
-    updateComboProfit
+    updateComboProfit,
+    getComboCost
   };
   
   export default combosService;

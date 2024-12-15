@@ -1,6 +1,7 @@
 package com.messismo.bar.Controllers;
 
 import com.messismo.bar.DTOs.*;
+import com.messismo.bar.Entities.Combo;
 import com.messismo.bar.Exceptions.*;
 import com.messismo.bar.Services.CategoryService;
 import com.messismo.bar.Services.ComboService;
@@ -124,5 +125,12 @@ public class ValidatedEmployeeController {
     public ResponseEntity<?> getAllCombos() {
         return ResponseEntity.status(HttpStatus.OK).body(comboService.getAllCombos());
     }
+
+    @GetMapping("/getComboCost/{comboId}")
+    public ResponseEntity<Double> getComboCost(@PathVariable Long comboId) {
+        Double comboCost = comboService.getComboCostById(comboId);
+        return ResponseEntity.ok(comboCost);
+    }
+
 
 }

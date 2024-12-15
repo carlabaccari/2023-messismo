@@ -21,11 +21,31 @@ public class OrderService {
 
     private final ProductOrderRepository productOrderRepository;
 
+    private final ComboOrderRepository comboOrderRepository;
+
+    private final ComboRepository comboRepository;
+
     public String addNewOrder(OrderRequestDTO orderRequestDTO) throws Exception {
         try {
+            System.out.println(orderRequestDTO);
             User employee = userRepository.findByEmail(orderRequestDTO.getRegisteredEmployeeEmail()).orElseThrow(() -> new UserNotFoundException("No user has that email"));
-            NewProductOrderListDTO newProductOrderListDTO = createProductOrder(orderRequestDTO.getProductOrders());
-            Order newOrder = new Order(employee, orderRequestDTO.getDateCreated(), newProductOrderListDTO.getProductOrderList(), newProductOrderListDTO.getTotalPrice(), newProductOrderListDTO.getTotalCost());
+            NewProductOrderListDTO newProductOrderListDTO = new NewProductOrderListDTO(new ArrayList<>(), 0.0, 0.0);
+            if (orderRequestDTO.getProductOrders() != null && !orderRequestDTO.getProductOrders().isEmpty()) {
+                newProductOrderListDTO = createProductOrder(orderRequestDTO.getProductOrders());
+            }
+
+            // Crear órdenes de combos (si hay combos)
+            NewComboOrderListDTO newComboOrderListDTO = new NewComboOrderListDTO(new ArrayList<>(), 0.0, 0.0);
+            if (orderRequestDTO.getComboOrders() != null && !orderRequestDTO.getComboOrders().isEmpty()) {
+                newComboOrderListDTO = createComboOrder(orderRequestDTO.getComboOrders());
+            }
+
+            double totalCost = newProductOrderListDTO.getTotalCost() + newComboOrderListDTO.getTotalCost();
+            double totalPrice = newProductOrderListDTO.getTotalPrice() + newComboOrderListDTO.getTotalPrice();
+
+
+            Order newOrder = new Order(employee, orderRequestDTO.getDateCreated(), newProductOrderListDTO.getProductOrderList(), newComboOrderListDTO.getComboOrderList(), totalPrice, totalCost);
+            System.out.println(newOrder);
             orderRepository.save(newOrder);
             return "Order created successfully";
         } catch (UserNotFoundException | ProductQuantityBelowAvailableStock e) {
@@ -99,4 +119,45 @@ public class OrderService {
         }
         return NewProductOrderListDTO.builder().productOrderList(productOrderList).totalCost(totalCost).totalPrice(totalPrice).build();
     }
+
+
+    public NewComboOrderListDTO createComboOrder(List<ComboOrderDTO> comboOrderListDTO) throws ProductQuantityBelowAvailableStock {
+        List<ComboOrder> comboOrderList = new ArrayList<>();
+        double totalPrice = 0.00;
+        double totalCost = 0.00;
+
+        for (ComboOrderDTO comboOrderDTO : comboOrderListDTO) {
+            Combo combo = comboOrderDTO.getCombo();
+
+            for (ProductCombo productCombo : combo.getProducts()) {
+                Product product = productCombo.getProduct();
+
+                int totalRequiredQuantity = productCombo.getQuantity() * comboOrderDTO.getQuantity();
+
+
+                if (product.getStock() < totalRequiredQuantity) {
+                    throw new ProductQuantityBelowAvailableStock(
+                            "Not enough stock of product: " + product.getName());
+                }
+
+
+                product.removeStock(totalRequiredQuantity);
+                productRepository.save(product);
+
+
+                totalCost += (product.getUnitCost() * totalRequiredQuantity);
+
+            }
+            totalPrice += (combo.getPrice() * comboOrderDTO.getQuantity());
+
+
+            ComboOrder comboOrder = new ComboOrder(combo.getName(), combo.getPrice(), combo.getProfit(), comboOrderDTO.getQuantity());
+            comboOrderRepository.save(comboOrder);
+            comboOrderList.add(comboOrder);
+        }
+
+
+        return NewComboOrderListDTO.builder().comboOrderList(comboOrderList).totalCost(totalCost).totalPrice(totalPrice).build();
+    }
+
 }

@@ -81,6 +81,12 @@ public class ComboService {
         return combos.stream().map(this::toComboDTO).toList();
     }
 
+    public Double getComboCostById(Long comboId) {
+        Combo combo = comboRepository.findById(comboId)
+                .orElseThrow(() -> new IllegalArgumentException("Combo no encontrado con ID: " + comboId));
+        return combo.getTotalCost();
+    }
+
     private ComboDTO toComboDTO(Combo combo) {
         double totalCost = combo.getProducts().stream()
                 .mapToDouble(pc -> pc.getProduct().getUnitCost() * pc.getQuantity())

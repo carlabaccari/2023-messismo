@@ -35,6 +35,9 @@ public class Order {
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private List<ProductOrder> productOrders;
 
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    private List<ComboOrder> comboOrders;
+
     @Column(name = "total_price")
     private Double totalPrice;
 
@@ -49,7 +52,7 @@ public class Order {
         return "Order{" + "id=" + id + ", user=" + user.getEmail() + ", dateCreated=" + dateCreated + ", productOrder=" + productOrders + ", totalPrice=" + totalPrice + ", totalCost=" + totalCost + ", status=" + status + '}';
     }
 
-    public Order(User user, Date dateCreated, List<ProductOrder> productOrders, Double totalPrice, Double totalCost){
+    public Order(User user, Date dateCreated, List<ProductOrder> productOrders, List<ComboOrder> comboOrders, Double totalPrice, Double totalCost){
         if(totalPrice<0.00){
             throw new IllegalArgumentException("Total price must be greater than 0");
         } else if (totalCost<0.00) {

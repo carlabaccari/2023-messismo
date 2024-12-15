@@ -364,6 +364,10 @@ function Dashboard() {
       quantityProductDonut: {},
       earningProductDonut: {},
       averageByOrder: {},
+      quantityComboDonut: {},
+      earningComboDonut: {},
+      earningProductAndComboDonut: {},
+      quantityProductAndComboDonut: {},
       orderByQuantity: {},
       earningCategoryDonut: {},
       orderByEarnings: {},
@@ -804,6 +808,12 @@ function Dashboard() {
                     <MenuItem sx={{ fontSize: "1.2rem" }} value="category">
                       By Category
                     </MenuItem>
+                    <MenuItem sx={{ fontSize: "1.2rem" }} value="combo">
+                      By Combo
+                    </MenuItem>
+                    <MenuItem sx={{ fontSize: "1.2rem" }} value="product and combo">
+                      By Product and Combo
+                    </MenuItem>
                   </Select>
                 </FormControl>
               </Box>
@@ -887,34 +897,57 @@ function Dashboard() {
               </Box>
 
               <DoughnutDiv>
-                {chartType === "product" ? (
-                  <>
-                  
-                      <Doughnut
-                        data={Object(dashboardData.data.earningProductDonut)}
-                        label={"Revenue"}
-                      />
-                      <Doughnut
-                        data={Object(dashboardData.data.quantityProductDonut)}
-                        label={"Sales"}
-                      />
-                   
-                  
-                  </>
-                ) : (
-                  <>
-                    <Doughnut
-                      data={Object(dashboardData.data.earningCategoryDonut)}
-                      label={"Revenue"}
-                    />
+  {chartType === "product" && (
+    <>
+      <Doughnut
+        data={Object(dashboardData.data.earningProductDonut)}
+        label={"Revenue por Producto"}
+      />
+      <Doughnut
+        data={Object(dashboardData.data.quantityProductDonut)}
+        label={"Cantidad por Producto"}
+      />
+    </>
+  )}
+  
+  {chartType === "category" && (
+    <>
+      <Doughnut
+        data={Object(dashboardData.data.earningCategoryDonut)}
+        label={"Revenue por Categoría"}
+      />
+      <Doughnut
+        data={Object(dashboardData.data.quantityCategoryDonut)}
+        label={"Cantidad por Categoría"}
+      />
+    </>
+  )}
+{chartType === "product and combo" && (
+    <>
+      <Doughnut
+        data={Object(dashboardData.data.earningProductAndComboDonut)}
+        label={"Revenue"}
+      />
+      <Doughnut
+        data={Object(dashboardData.data.quantityProductAndComboDonut)}
+        label={"Cantidad"}
+      />
+    </>
+  )}
+  {chartType === "combo" && ( // Nuevo bloque para combos
+    <>
+      <Doughnut
+        data={Object(dashboardData.data.earningComboDonut)}
+        label={"Revenue por Combo"}
+      />
+      <Doughnut
+        data={Object(dashboardData.data.quantityComboDonut)}
+        label={"Cantidad por Combo"}
+      />
+    </>
+  )}
+</DoughnutDiv>
 
-                    <Doughnut
-                      data={Object(dashboardData.data.quantityCategoryDonut)}
-                      label={"Sales"}
-                    />
-                  </>
-                )}
-              </DoughnutDiv>
             </RevenueDoughnutDiv>
           </Graphs>
         )}

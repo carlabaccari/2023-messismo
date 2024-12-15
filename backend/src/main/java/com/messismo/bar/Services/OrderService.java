@@ -44,6 +44,8 @@ public class OrderService {
             double totalPrice = newProductOrderListDTO.getTotalPrice() + newComboOrderListDTO.getTotalPrice();
 
 
+
+
             Order newOrder = new Order(employee, orderRequestDTO.getDateCreated(), newProductOrderListDTO.getProductOrderList(), newComboOrderListDTO.getComboOrderList(), totalPrice, totalCost);
             System.out.println(newOrder);
             orderRepository.save(newOrder);
@@ -165,15 +167,18 @@ public class OrderService {
                 productRepository.save(product);
 
 
-                totalCost += (product.getUnitCost() * totalRequiredQuantity);
+
 
             }
+            totalCost += (combo.getTotalCost() * comboOrderDTO.getQuantity());
             totalPrice += (combo.getPrice() * comboOrderDTO.getQuantity());
 
 
-            ComboOrder comboOrder = new ComboOrder(combo.getName(), combo.getPrice(), combo.getProfit(), comboOrderDTO.getQuantity());
+
+            ComboOrder comboOrder = new ComboOrder(combo.getId(), combo.getName(), combo.getPrice(), combo.getTotalCost(), comboOrderDTO.getQuantity());
             comboOrderRepository.save(comboOrder);
             comboOrderList.add(comboOrder);
+
         }
 
 

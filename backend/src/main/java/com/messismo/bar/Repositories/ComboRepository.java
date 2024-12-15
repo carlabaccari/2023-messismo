@@ -16,7 +16,7 @@ public interface ComboRepository extends JpaRepository<Combo, Long> {
     @Query("SELECT c FROM Combo c LEFT JOIN FETCH c.products pc LEFT JOIN FETCH pc.product")
     List<Combo> findAllWithProducts();
 
-    Optional<Combo> findById(Long id);
+
 
 
 

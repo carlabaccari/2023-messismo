@@ -168,6 +168,19 @@ public class ComboService {
     }
 
 
+    public List<ProductCombo> getProductCombosByComboId(Long comboId) {
+        Optional<Combo> comboOptional = comboRepository.findById(comboId);
+        if (comboOptional.isEmpty()) {
+            throw new NoSuchElementException("Combo not found with ID: " + comboId);
+        }
+
+        return comboOptional.get().getProducts();
+    }
+
+
+
+
+
 
 
 

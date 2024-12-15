@@ -14,8 +14,7 @@ import java.util.List;
 @NoArgsConstructor
 public class NewComboOrderListDTO {
     private List<ComboOrder> comboOrderList;
-
-    private Double totalPrice;
-
     private Double totalCost;
+    private Double totalPrice;
 }
+

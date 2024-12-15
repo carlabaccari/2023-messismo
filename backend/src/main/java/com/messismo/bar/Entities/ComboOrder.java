@@ -19,6 +19,9 @@ public class ComboOrder {
     @Column(name = "comboOrderId")
     private Long comboOrderId;
 
+    @Column(name = "comboId")
+    private Long comboId;
+
     @Column(name = "comboName")
     private String comboName;
 
@@ -28,12 +31,11 @@ public class ComboOrder {
     @Column(name = "comboUnitPrice")
     private Double comboUnitPrice;
 
-
     @Column(name = "quantity")
     private Integer quantity;
 
 
-    public ComboOrder(String comboName, Double comboUnitPrice, Double comboUnitCost, Integer quantity) {
+    public ComboOrder(Long comboId, String comboName, Double comboUnitPrice, Double comboUnitCost, Integer quantity) {
         if (quantity < 0) {
             throw new IllegalArgumentException("Combo quantity must be greater than 0");
         } else {
@@ -41,6 +43,7 @@ public class ComboOrder {
             this.comboUnitPrice = comboUnitPrice;
             this.comboUnitCost = comboUnitCost;
             this.quantity = quantity;
+            this.comboId = comboId;
         }
     }
 
@@ -48,4 +51,6 @@ public class ComboOrder {
     public String toString() {
         return "ComboOrder{" + "comboOrderId=" + comboOrderId + ", combo=" + comboName + ", quantity=" + quantity + '}';
     }
+
+
 }

@@ -480,6 +480,20 @@ const [isLoading, setIsLoading] = useState(true);
       )}
     </IconButton>
         </div>
+        <div className="title">
+          <p style={{ color: "white", fontWeight: "bold" }}>Profit</p>
+          <IconButton size="small" onClick={() => handleSort("profit")}>
+      {sortField === "profit" ? (
+        sortOrder === "asc" ? (
+          <ExpandLessIcon className="ExpandIcon" style={{ color: "white"}}/>
+        ) : (
+          <ExpandMoreIcon className="ExpandIcon" style={{ color: "white"}}/>
+        )
+      ) : (
+        <ExpandMoreIcon className="ExpandIcon" style={{ color: "white"}}/>
+      )}
+    </IconButton>
+        </div>
         
         <div className="title">
           <p style={{ color: "white", fontWeight: "bold" }}>Actions</p>
@@ -515,6 +529,9 @@ const [isLoading, setIsLoading] = useState(true);
                 </div>
                 <div className="category">
                   <p className="text">{producto.unitCost}</p>
+                </div>
+                <div className="category">
+                  <p className="text">{(((producto.unitPrice - producto.unitCost)/producto.unitCost)*100).toFixed(2)}%</p>
                 </div>
               </div>
               <div className="buttons-edit">

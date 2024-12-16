@@ -13,7 +13,6 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import ProgressBar from "../components/ProgressBar";
 import productsService from "../services/products.service";
 import categoryService from "../services/category.service";
-import { makeStyles } from "@mui/styles";
 import dashboardService from "../services/dashboard.service";
 import moment from "moment";
 import dayjs from "dayjs";
@@ -340,20 +339,11 @@ function abbreviateNumber(number) {
   }
 }
 
-const useStyles = makeStyles({
-  slider: {
-    color: '#a4d4cc',
-    '& .MuiSlider-thumb': {
-      backgroundColor: 'white',
-    },
-  },
-});
 
 
 function Dashboard() {
   const { user: currentUser } = useSelector((state) => state.auth);
   const clicked = useSelector((state) => state.navigation.clicked);
-  const classes = useStyles();
   const theme = useTheme();
   const [products, setProducts] = useState([]);
   const [totalproducts, setTotalProducts] = useState([]);
@@ -741,12 +731,20 @@ function Dashboard() {
                     max={20}
                     value={sliderValue}
                     onChange={handleSliderChange}
-                    classes={{
-                      root: classes.slider,
-                      thumb: classes.slider,
-                      active: classes.slider,
-                      track: classes.slider,
-                      rail: classes.slider,
+                    sx={{
+                      color: '#a4d4cc',
+                      '& .MuiSlider-thumb': {
+                        backgroundColor: 'white',
+                      },
+                      '& .MuiSlider-track': {
+                        backgroundColor: '#a4d4cc',
+                      },
+                      '& .MuiSlider-rail': {
+                        backgroundColor: '#e0e0e0',
+                      },
+                      '& .MuiSlider-active': {
+                        backgroundColor: '#a4d4cc',
+                      },
                     }}
                   />
                   <p style={{ color: "white", marginBottom: "2rem" }}>

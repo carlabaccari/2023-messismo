@@ -134,7 +134,7 @@ public class ComboService {
             Combo combo = comboRepository.findById(comboPriceDTO.getId()).orElseThrow(() -> new ComboNotFoundException("ComboId DOES NOT match any comboId"));
             combo.updatePrice(comboPriceDTO.getPrice());
             comboRepository.save(combo);
-            return "Product price updated successfully";
+            return "Combo price updated successfully";
         } catch (ComboNotFoundException e) {
             throw e;
         } catch (Exception e) {

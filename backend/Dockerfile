@@ -12,6 +12,6 @@ RUN ./mvnw dependency:resolve
 
 COPY src ./src
 
-ENV SPRING_PROFILES_ACTIVE=default
+ENV SPRING_PROFILES_ACTIVE=prod
 
 CMD ["./mvnw", "spring-boot:run"]

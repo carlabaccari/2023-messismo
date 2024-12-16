@@ -13,7 +13,7 @@ import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import ProgressBar from "../components/ProgressBar";
 import productsService from "../services/products.service";
 import categoryService from "../services/category.service";
-import { makeStyles } from "@mui/styles";
+import { makeStyles } from "@mui/material/styles";
 import dashboardService from "../services/dashboard.service";
 import moment from "moment";
 import dayjs from "dayjs";
@@ -342,9 +342,13 @@ function abbreviateNumber(number) {
 
 const useStyles = makeStyles({
   slider: {
-    color: "#a4d4cc",
+    color: '#a4d4cc',
+    '& .MuiSlider-thumb': {
+      backgroundColor: 'white',
+    },
   },
 });
+
 
 function Dashboard() {
   const { user: currentUser } = useSelector((state) => state.auth);

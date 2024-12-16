@@ -131,28 +131,29 @@ public class ComboService {
 
     public String modifyComboPrice(ComboPriceDTO comboPriceDTO) throws Exception {
         try {
-            Combo combo = comboRepository.findById(comboPriceDTO.getId()).orElseThrow(() -> new ProductNotFoundException("ProductId DOES NOT match any productId"));
+            Combo combo = comboRepository.findById(comboPriceDTO.getId()).orElseThrow(() -> new ComboNotFoundException("ComboId DOES NOT match any comboId"));
             combo.updatePrice(comboPriceDTO.getPrice());
             comboRepository.save(combo);
             return "Product price updated successfully";
-        } catch (ProductNotFoundException e) {
+        } catch (ComboNotFoundException e) {
             throw e;
         } catch (Exception e) {
-            throw new Exception("");
+            throw new Exception("An unexpected error occurred while updating the combo profit");
         }
     }
 
     public String modifyComboProfit(ComboProfitDTO comboProfitDTO) throws Exception {
         try {
-            Combo combo = comboRepository.findById(comboProfitDTO.getId()).orElseThrow(() -> new ProductNotFoundException("ProductId DOES NOT match any productId"));
+            Combo combo = comboRepository.findById(comboProfitDTO.getId())
+                    .orElseThrow(() -> new ComboNotFoundException("ComboId DOES NOT match any comboId"));
             combo.updateProfit(comboProfitDTO.getProfit());
             comboRepository.save(combo);
             System.out.println(combo);
             return "Combo profit updated successfully";
-        } catch (ProductNotFoundException e) {
+        } catch (ComboNotFoundException e) {
             throw e;
         } catch (Exception e) {
-            throw new Exception("");
+            throw new Exception("An unexpected error occurred while updating the combo profit");
         }
     }
 
@@ -168,14 +169,15 @@ public class ComboService {
             ProductCombo existing = existingCombos.get(i);
             ProductCombo newCombo = newCombos.get(i);
 
-
-            if (!existing.getProduct().getProductId().equals(newCombo.getProduct().getProductId()) ||
-                    !existing.getQuantity().equals(newCombo.getQuantity())) {
+            if (!existing.getProduct().getProductId().equals(newCombo.getProduct().getProductId())
+                    || !existing.getQuantity().equals(newCombo.getQuantity())) {
                 return false;
             }
         }
+
         return true;
     }
+
 
 
     public List<ProductCombo> getProductCombosByComboId(Long comboId) {

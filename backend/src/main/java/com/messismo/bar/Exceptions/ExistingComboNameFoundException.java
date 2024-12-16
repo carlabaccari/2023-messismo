@@ -1,6 +1,6 @@
 package com.messismo.bar.Exceptions;
 
-public class ExistingComboNameFoundException extends Throwable {
+public class ExistingComboNameFoundException extends Exception {
 
     public ExistingComboNameFoundException() {
         super();

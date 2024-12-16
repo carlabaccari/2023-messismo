@@ -39,10 +39,16 @@ const addCombos = (combo) => {
   )
   .then((response) => {
     console.log("Combo agregado con éxito:", response.data);
+    return response.data;
   })
   .catch((error) => {
-    console.log(combo);
-    console.error("Error al agregar el combo:", error);
+    if (axios.isAxiosError(error)) {
+      console.error('Error al agregar el combo:', error.response?.data || error.message);
+      throw error.response?.data
+    } else {
+      console.error('Error inesperado:', error);
+    }
+    throw error;
   });
 };
 

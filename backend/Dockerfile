@@ -10,8 +10,8 @@ COPY mvnw pom.xml ./
 
 RUN ./mvnw dependency:resolve
 
-COPY . /app
+COPY src ./src
 
-ENV SPRING_PROFILES_ACTIVE=prod
+ENV SPRING_PROFILES_ACTIVE=default
 
 CMD ["./mvnw", "spring-boot:run"]

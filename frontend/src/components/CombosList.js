@@ -192,40 +192,44 @@ const [isLoading, setIsLoading] = useState(true);
     setIsEditFormOpen(false);
   };
 
-  
+
 
 
   const handleSaveCombo = async (newComboData) => {
     try {
-      const response = await addComboAsync(newComboData); // Llama a la función que lanza errores si falla
-      console.log(response);
   
-      // Solo si la función no lanza error se ejecuta este bloque
-      setIsOperationSuccessful(true);
-      setAlertText("Combo added successfully!");
+      const response = await combosService.addCombos(newComboData);
+  
+      
+
   
       const updatedComboResponse = await combosService.getAllCombos();
       setCombos(updatedComboResponse.data);
       setFilteredCombos(updatedComboResponse.data);
       console.log(updatedComboResponse.data);
+      setIsOperationSuccessful(true);
+      setAlertText("Combo added successfully!");
+      setOpenSnackbar(true);
+  
+      
+      setSearchValue("");
     } catch (error) {
+      
       console.error("Error al agregar el combo", error);
       setIsOperationSuccessful(false);
-      setAlertText("Failed to add combo");
-    } finally {
+      setAlertText(error);
       setOpenSnackbar(true);
+      
     }
   };
+  
+  
   
 
   const addComboAsync = async (newComboData) => {
     try {
       const response = await combosService.addCombos(newComboData);
-      if (response.status >= 200 && response.status < 300) {
-        return response; // Retorna solo si el estado es exitoso
-      } else {
-        throw new Error(`Error en la API: ${response.status} ${response.statusText}`);
-      }
+        return response;
     } catch (error) {
       throw error; // Lanza el error para que sea capturado en el bloque catch de handleSaveCombo
     }

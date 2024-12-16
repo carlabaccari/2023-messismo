@@ -10,7 +10,7 @@ COPY mvnw pom.xml ./
 
 RUN ./mvnw dependency:resolve
 
-COPY src ./src
+COPY . /app
 
 ENV SPRING_PROFILES_ACTIVE=prod
 

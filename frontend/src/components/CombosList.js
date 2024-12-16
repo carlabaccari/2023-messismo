@@ -460,7 +460,7 @@ const [isLoading, setIsLoading] = useState(true);
                 </ul>
                 </div>
                 <div className="category">
-                  <p className="text">${combo.price}</p>
+                  <p className="text">${combo.price.toFixed(2)}</p>
                 </div>
                 <div className="category">
                 <p className="text">

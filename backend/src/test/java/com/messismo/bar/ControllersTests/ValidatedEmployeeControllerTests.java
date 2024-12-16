@@ -1,5 +1,6 @@
 package com.messismo.bar.ControllersTests;
 
+import com.messismo.bar.Controllers.ManagerController;
 import com.messismo.bar.Controllers.ValidatedEmployeeController;
 import com.messismo.bar.DTOs.*;
 import com.messismo.bar.Entities.*;
@@ -37,6 +38,12 @@ public class ValidatedEmployeeControllerTests {
 
     @Mock
     private OrderService orderService;
+
+    @Mock
+    private ComboService comboService;
+
+
+
 
     @BeforeEach
     public void setUp() {
@@ -233,7 +240,7 @@ public class ValidatedEmployeeControllerTests {
     @Test
     public void testAddNewOrder_Success() throws Exception {
 
-        OrderRequestDTO orderRequestDTO = new OrderRequestDTO("employee@example.com",new Date(),List.of(new ProductOrderDTO(new Product(1L,"Product1",10.0,7.0,"Description1",50,new Category(1L,"Category1")), 2)));
+        OrderRequestDTO orderRequestDTO = new OrderRequestDTO("employee@example.com",new Date(),List.of(new ProductOrderDTO(new Product(1L,"Product1",10.0,7.0,"Description1",50,new Category(1L,"Category1")), 2)), List.of(new ComboOrderDTO()));
         when(orderService.addNewOrder(orderRequestDTO)).thenReturn("Order created successfully");
         ResponseEntity<?> response = validatedEmployeeController.addNewOrder(orderRequestDTO);
 
@@ -245,7 +252,7 @@ public class ValidatedEmployeeControllerTests {
     @Test
     public void testAddNewOrder_Conflict_UserNotFound() throws Exception {
 
-        OrderRequestDTO orderRequestDTO = new OrderRequestDTO("employee@example.com",new Date(),List.of(new ProductOrderDTO(new Product(1L,"Product1",10.0,7.0,"Description1",50,new Category(1L,"Category1")), 2)));
+        OrderRequestDTO orderRequestDTO = new OrderRequestDTO("employee@example.com",new Date(),List.of(new ProductOrderDTO(new Product(1L,"Product1",10.0,7.0,"Description1",50,new Category(1L,"Category1")),  2)), List.of(new ComboOrderDTO()));
         when(orderService.addNewOrder(orderRequestDTO)).thenThrow(new UserNotFoundException("User not found"));
         ResponseEntity<?> response = validatedEmployeeController.addNewOrder(orderRequestDTO);
 
@@ -257,7 +264,7 @@ public class ValidatedEmployeeControllerTests {
     @Test
     public void testAddNewOrder_Conflict_ProductQuantityBelowAvailableStock() throws Exception {
 
-        OrderRequestDTO orderRequestDTO = new OrderRequestDTO("employee@example.com",new Date(),List.of(new ProductOrderDTO(new Product(1L,"Product1",10.0,7.0,"Description1",50,new Category(1L,"Category1")), 2)));
+        OrderRequestDTO orderRequestDTO = new OrderRequestDTO("employee@example.com",new Date(),List.of(new ProductOrderDTO(new Product(1L,"Product1",10.0,7.0,"Description1",50,new Category(1L,"Category1")), 2)), List.of(new ComboOrderDTO()));
         when(orderService.addNewOrder(orderRequestDTO)).thenThrow(new ProductQuantityBelowAvailableStock("Product quantity below available stock"));
         ResponseEntity<?> response = validatedEmployeeController.addNewOrder(orderRequestDTO);
 
@@ -269,7 +276,7 @@ public class ValidatedEmployeeControllerTests {
     @Test
     public void testAddNewOrder_InternalServerError() throws Exception {
 
-        OrderRequestDTO orderRequestDTO = new OrderRequestDTO("employee@example.com",new Date(),List.of(new ProductOrderDTO(new Product(1L,"Product1",10.0,7.0,"Description1",50,new Category(1L,"Category1")), 2)));
+        OrderRequestDTO orderRequestDTO = new OrderRequestDTO("employee@example.com",new Date(),List.of(new ProductOrderDTO(new Product(1L,"Product1",10.0,7.0,"Description1",50,new Category(1L,"Category1")), 2)), List.of(new ComboOrderDTO()));
         when(orderService.addNewOrder(orderRequestDTO)).thenThrow(new Exception("Internal server error"));
         ResponseEntity<?> response = validatedEmployeeController.addNewOrder(orderRequestDTO);
 
@@ -317,7 +324,7 @@ public class ValidatedEmployeeControllerTests {
     @Test
     public void testModifyOrder_Success() throws Exception {
 
-        ModifyOrderDTO modifyOrderDTO = new ModifyOrderDTO(1L,List.of(new ProductOrderDTO(new Product(1L,"Product1",10.0,7.0,"Description1",50,new Category(1L,"Category1")), 2)));
+        ModifyOrderDTO modifyOrderDTO = new ModifyOrderDTO(1L,List.of(new ProductOrderDTO(new Product(1L,"Product1",10.0,7.0,"Description1",50,new Category(1L,"Category1")), 2)), List.of(new ComboOrderDTO(new Combo(1L, "Combo 1", List.of(new ProductCombo(new Product(1L, "Hamburguesa", 4000.00, 2000.00, "hambueguesa doble", 2, new Category(1L,"Category1")), 1)),3000.00, 20.00), 1)));
         when(orderService.modifyOrder(modifyOrderDTO)).thenReturn("Order modified successfully");
         ResponseEntity<?> response = validatedEmployeeController.modifyOrder(modifyOrderDTO);
 
@@ -329,7 +336,7 @@ public class ValidatedEmployeeControllerTests {
     @Test
     public void testModifyOrder_Conflict_ProductQuantityBelowAvailableStock() throws Exception {
 
-        ModifyOrderDTO modifyOrderDTO = new ModifyOrderDTO(1L,List.of(new ProductOrderDTO(new Product(1L,"Product1",10.0,7.0,"Description1",50,new Category(1L,"Category1")), 2)));
+        ModifyOrderDTO modifyOrderDTO = new ModifyOrderDTO(1L,List.of(new ProductOrderDTO(new Product(1L,"Product1",10.0,7.0,"Description1",50,new Category(1L,"Category1")), 2)), List.of(new ComboOrderDTO(new Combo(1L, "Combo 1", List.of(new ProductCombo(new Product(1L, "Hamburguesa", 4000.00, 2000.00, "hambueguesa doble", 2, new Category(1L,"Category1")), 1)),3000.00, 20.00), 1)));
         when(orderService.modifyOrder(modifyOrderDTO)).thenThrow(new ProductQuantityBelowAvailableStock("Insufficient stock"));
         ResponseEntity<?> response = validatedEmployeeController.modifyOrder(modifyOrderDTO);
 
@@ -341,7 +348,7 @@ public class ValidatedEmployeeControllerTests {
     @Test
     public void testModifyOrder_Conflict_OrderNotFound() throws Exception {
 
-        ModifyOrderDTO modifyOrderDTO = new ModifyOrderDTO(1L,List.of(new ProductOrderDTO(new Product(1L,"Product1",10.0,7.0,"Description1",50,new Category(1L,"Category1")), 2)));
+        ModifyOrderDTO modifyOrderDTO = new ModifyOrderDTO(1L,List.of(new ProductOrderDTO(new Product(1L,"Product1",10.0,7.0,"Description1",50,new Category(1L,"Category1")), 2)), List.of(new ComboOrderDTO(new Combo(1L, "Combo 1", List.of(new ProductCombo(new Product(1L, "Hamburguesa", 4000.00, 2000.00, "hambueguesa doble", 2, new Category(1L,"Category1")), 1)),3000.00, 20.00), 1)));
         when(orderService.modifyOrder(modifyOrderDTO)).thenThrow(new OrderNotFoundException("Order not found"));
         ResponseEntity<?> response = validatedEmployeeController.modifyOrder(modifyOrderDTO);
 
@@ -353,7 +360,7 @@ public class ValidatedEmployeeControllerTests {
     @Test
     public void testModifyOrder_InternalServerError() throws Exception {
 
-        ModifyOrderDTO modifyOrderDTO = new ModifyOrderDTO(1L,List.of(new ProductOrderDTO(new Product(1L,"Product1",10.0,7.0,"Description1",50,new Category(1L,"Category1")), 2)));
+        ModifyOrderDTO modifyOrderDTO = new ModifyOrderDTO(1L,List.of(new ProductOrderDTO(new Product(1L,"Product1",10.0,7.0,"Description1",50,new Category(1L,"Category1")), 2)), List.of(new ComboOrderDTO(new Combo(1L, "Combo 1", List.of(new ProductCombo(new Product(1L, "Hamburguesa", 4000.00, 2000.00, "hambueguesa doble", 2, new Category(1L,"Category1")), 1)),3000.00, 20.00), 1)));
         when(orderService.modifyOrder(modifyOrderDTO)).thenThrow(new RuntimeException("Internal server error"));
         ResponseEntity<?> response = validatedEmployeeController.modifyOrder(modifyOrderDTO);
 
@@ -366,8 +373,8 @@ public class ValidatedEmployeeControllerTests {
     public void testGetAllOrders() {
 
         List<Order> mockOrders = Arrays.asList(
-                new Order( new User("user1","user1@mail.com","Password1"), new Date(), List.of(new ProductOrder("Product1",10.0,7.0,new Category(1L,"Category1"), 2)),20.0,14.0),
-                new Order( new User("user1","user1@mail.com","Password1"), new Date(), List.of(new ProductOrder("Product2",30.0,10.0,new Category(2L,"Category2"), 3)),90.0,30.0)
+                new Order( new User("user1","user1@mail.com","Password1"), new Date(), List.of(new ProductOrder("Product1",10.0,7.0,new Category(1L,"Category1"), 2)), List.of(new ComboOrder(1L, "Combo 1", 6000.00, 2000.00, 1)),20.0,14.0),
+                new Order( new User("user1","user1@mail.com","Password1"), new Date(), List.of(new ProductOrder("Product2",30.0,10.0,new Category(2L,"Category2"), 3)), List.of(new ComboOrder(2L, "Combo 2", 3000.00, 1000.00, 1)),90.0,30.0)
         );
         when(orderService.getAllOrders()).thenReturn(mockOrders);
         ResponseEntity<?> response = validatedEmployeeController.getAllOrders();
@@ -376,6 +383,23 @@ public class ValidatedEmployeeControllerTests {
         Assertions.assertEquals(mockOrders, response.getBody());
 
     }
+
+    @Test
+    public void testGetAllCombos() {
+
+        List<ComboDTO> mockCombos = Arrays.asList(
+                new ComboDTO(1L, "Combo 1", 2000.00, List.of(new ProductComboDTO(1L, "Product A",2), new ProductComboDTO(2L, "Producto B", 1)), 5000.0, 50.0),
+                new ComboDTO(1L, "Combo 1", 2000.00, List.of(new ProductComboDTO(3L, "Product B",2), new ProductComboDTO(4L, "Producto D", 1)), 5000.0, 50.0)
+                );
+
+        when(comboService.getAllCombos()).thenReturn(mockCombos);
+        ResponseEntity<?> response = validatedEmployeeController.getAllCombos();
+        Assertions.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assertions.assertEquals(mockCombos, response.getBody());
+        verify(comboService, times(1)).getAllCombos();
+    }
+
+
 
 
 }

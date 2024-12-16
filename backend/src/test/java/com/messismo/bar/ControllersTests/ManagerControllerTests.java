@@ -15,8 +15,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.sql.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -523,9 +525,9 @@ public class ManagerControllerTests {
         GoalDTO goalDTO = new GoalDTO();
         goalDTO.setName("Test Goal");
         LocalDate today = LocalDate.now();
-        Date startingDate = java.sql.Date.valueOf(today);
+        Date startingDate = java.util.Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant());
         LocalDate tomorrow = today.plusDays(1);
-        Date endingDate = java.sql.Date.valueOf(tomorrow);
+        Date endingDate = java.util.Date.from(tomorrow.atStartOfDay(ZoneId.systemDefault()).toInstant());
         goalDTO.setStartingDate(startingDate);
         goalDTO.setEndingDate(endingDate);
         goalDTO.setObjectType("Product");
@@ -544,9 +546,9 @@ public class ManagerControllerTests {
         GoalDTO goalDTO = new GoalDTO();
         goalDTO.setName("Test Goal");
         LocalDate today = LocalDate.now();
-        Date startingDate = java.sql.Date.valueOf(today);
+        Date startingDate = java.util.Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant());
         LocalDate tomorrow = today.plusDays(1);
-        Date endingDate = java.sql.Date.valueOf(tomorrow);
+        Date endingDate = java.util.Date.from(tomorrow.atStartOfDay(ZoneId.systemDefault()).toInstant());
         goalDTO.setStartingDate(startingDate);
         goalDTO.setEndingDate(endingDate);
         ResponseEntity<String> response = managerController.addGoal(goalDTO);
@@ -559,23 +561,22 @@ public class ManagerControllerTests {
 
     @Test
     public void testAddGoal_Conflict_InvalidObjectType() {
-
         GoalDTO goalDTO = new GoalDTO();
         goalDTO.setName("Test Goal");
         LocalDate today = LocalDate.now();
-        Date startingDate = java.sql.Date.valueOf(today);
+        Date startingDate = java.util.Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant());
         LocalDate tomorrow = today.plusDays(1);
-        Date endingDate = java.sql.Date.valueOf(tomorrow);
+        Date endingDate = java.util.Date.from(tomorrow.atStartOfDay(ZoneId.systemDefault()).toInstant());
         goalDTO.setStartingDate(startingDate);
         goalDTO.setEndingDate(endingDate);
         goalDTO.setObjectType("InvalidType");
         goalDTO.setGoalObject("SomeObject");
         goalDTO.setGoalObjective(500.0);
+
         ResponseEntity<String> response = managerController.addGoal(goalDTO);
 
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertEquals("Missing information to create a goal", response.getBody());
-
     }
 
     @Test
@@ -584,9 +585,9 @@ public class ManagerControllerTests {
         GoalDTO goalDTO = new GoalDTO();
         goalDTO.setName("Test Goal");
         LocalDate today = LocalDate.now();
-        Date startingDate = java.sql.Date.valueOf(today);
+        Date startingDate = java.util.Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant());
         LocalDate tomorrow = today.plusDays(1);
-        Date endingDate = java.sql.Date.valueOf(tomorrow);
+        Date endingDate = java.util.Date.from(tomorrow.atStartOfDay(ZoneId.systemDefault()).toInstant());
         goalDTO.setStartingDate(startingDate);
         goalDTO.setEndingDate(endingDate);
         goalDTO.setObjectType("Category");
@@ -604,9 +605,9 @@ public class ManagerControllerTests {
         GoalDTO goalDTO = new GoalDTO();
         goalDTO.setName("Test Goal");
         LocalDate today = LocalDate.now();
-        Date startingDate = java.sql.Date.valueOf(today);
+        Date startingDate = java.util.Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant());
         LocalDate tomorrow = today.plusDays(1);
-        Date endingDate = java.sql.Date.valueOf(tomorrow);
+        Date endingDate = java.util.Date.from(tomorrow.atStartOfDay(ZoneId.systemDefault()).toInstant());
         goalDTO.setStartingDate(startingDate);
         goalDTO.setEndingDate(endingDate);
         goalDTO.setObjectType("Product");
@@ -682,9 +683,9 @@ public class ManagerControllerTests {
         GoalDTO goalDTO = new GoalDTO();
         goalDTO.setName("Test Goal");
         LocalDate today = LocalDate.now();
-        Date startingDate = java.sql.Date.valueOf(today);
+        Date startingDate = java.util.Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant());
         LocalDate yesterday = today.minusDays(1);
-        Date endingDate = java.sql.Date.valueOf(yesterday);
+        Date endingDate = java.util.Date.from(yesterday.atStartOfDay(ZoneId.systemDefault()).toInstant());
         goalDTO.setStartingDate(startingDate);
         goalDTO.setEndingDate(endingDate);
         goalDTO.setObjectType("Category");

@@ -160,7 +160,7 @@ public class ComboService {
         if (existingCombos.size() != newCombos.size()) {
             return false;
         }
-        
+
         existingCombos.sort(Comparator.comparing(pc -> pc.getProduct().getProductId()));
         newCombos.sort(Comparator.comparing(pc -> pc.getProduct().getProductId()));
 

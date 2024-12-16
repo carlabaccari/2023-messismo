@@ -174,13 +174,13 @@ public class ProductServiceTests {
     @Test
     public void testProductServiceModifyUnitCostProduct_NotFound() {
 
-        ProductPriceDTO productPriceDTO = new ProductPriceDTO(10L, 50.00);
+        ProductCostDTO productCostDTO = new ProductCostDTO(10L, 50.00);
 
         ProductNotFoundException exception = assertThrows(ProductNotFoundException.class, () -> {
-            productService.modifyProductCost(productPriceDTO);
+            productService.modifyProductCost(productCostDTO);
         });
         Assertions.assertEquals("ProductId DOES NOT match any productId", exception.getMessage());
-        verify(productRepository, times(1)).findByProductId(productPriceDTO.getProductId());
+        verify(productRepository, times(1)).findByProductId(productCostDTO.getProductId());
 
     }
 
@@ -716,12 +716,12 @@ public class ProductServiceTests {
     @Test
     public void testModifyProductCostWithNegativeUnitPrice() {
 
-        ProductPriceDTO productPriceDTO = new ProductPriceDTO();
-        productPriceDTO.setProductId(1L);
-        productPriceDTO.setUnitPrice(-10.0);
-        when(productRepository.findByProductId(productPriceDTO.getProductId())).thenReturn(Optional.of(new Product()));
+        ProductCostDTO productCostDTO = new ProductCostDTO();
+        productCostDTO.setProductId(1L);
+        productCostDTO.setUnitCost(-10.0);
+        when(productRepository.findByProductId(productCostDTO.getProductId())).thenReturn(Optional.of(new Product()));
         Exception exception = assertThrows(Exception.class, () -> {
-            productService.modifyProductCost(productPriceDTO);
+            productService.modifyProductCost(productCostDTO);
         });
         verify(productRepository, never()).save(any());
     }
@@ -729,12 +729,12 @@ public class ProductServiceTests {
     @Test
     public void testModifyProductCostWithValidInput() throws Exception {
 
-        ProductPriceDTO productPriceDTO = new ProductPriceDTO();
-        productPriceDTO.setProductId(1L);
-        productPriceDTO.setUnitPrice(20.0);
+        ProductCostDTO productCostDTO = new ProductCostDTO();
+        productCostDTO.setProductId(1L);
+        productCostDTO.setUnitCost(20.0);
 
-        when(productRepository.findByProductId(productPriceDTO.getProductId())).thenReturn(Optional.of(new Product()));
-        assertEquals("Product cost updated successfully", productService.modifyProductCost(productPriceDTO));
+        when(productRepository.findByProductId(productCostDTO.getProductId())).thenReturn(Optional.of(new Product()));
+        assertEquals("Product cost updated successfully", productService.modifyProductCost(productCostDTO));
         verify(productRepository, times(1)).save(any());
 
     }
@@ -742,14 +742,14 @@ public class ProductServiceTests {
     @Test
     public void testModifyProductCostWithException() {
 
-        ProductPriceDTO productPriceDTO = new ProductPriceDTO();
-        productPriceDTO.setProductId(1L);
-        productPriceDTO.setUnitPrice(20.0);
-        when(productRepository.findByProductId(productPriceDTO.getProductId()))
+        ProductCostDTO productCostDTO = new ProductCostDTO();
+        productCostDTO.setProductId(1L);
+        productCostDTO.setUnitCost(20.0);
+        when(productRepository.findByProductId(productCostDTO.getProductId()))
                 .thenReturn(Optional.of(new Product()));
         doThrow(new RuntimeException("Simulated exception")).when(productRepository).save(any());
         Exception exception = assertThrows(Exception.class, () -> {
-            productService.modifyProductCost(productPriceDTO);
+            productService.modifyProductCost(productCostDTO);
         });
     }
 

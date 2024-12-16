@@ -2,8 +2,10 @@ package com.messismo.bar.Services;
 
 import com.messismo.bar.DTOs.*;
 import com.messismo.bar.Entities.*;
+import com.messismo.bar.Exceptions.ComboInOrderException;
 import com.messismo.bar.Exceptions.ComboNotFoundException;
 import com.messismo.bar.Exceptions.ProductNotFoundException;
+import com.messismo.bar.Repositories.ComboOrderRepository;
 import com.messismo.bar.Repositories.ComboRepository;
 import com.messismo.bar.Repositories.ProductComboRepository;
 import com.messismo.bar.Repositories.ProductRepository;
@@ -25,8 +27,11 @@ public class ComboService {
 
     private final ProductComboRepository productComboRepository;
 
+    private final ComboOrderRepository comboOrderRepository;
+
     public Combo addCombo(ComboDTO comboDTO) throws Exception, ExistingComboNameFoundException {
         try {
+
             Optional<Combo> existingCombo = comboRepository.findByName(comboDTO.getName());
             if (existingCombo.isPresent()) {
                 throw new ExistingComboNameFoundException("This name is already in use");
@@ -43,9 +48,6 @@ public class ComboService {
                     Product product = productOptional.get();
                     ProductCombo productCombo = new ProductCombo(product, quantity);
                     productCombos.add(productCombo);
-
-
-                    productCombos.add(productCombo);
                 }
             }
 
@@ -56,17 +58,15 @@ public class ComboService {
                 }
             }
 
-
-
+            // Crear el combo
             Combo combo = new Combo(
                     comboDTO.getName(),
                     productCombos,
-                    comboDTO.getPrice()
+                    comboDTO.getPrice(),
+                    comboDTO.getProfit()
             );
 
             return comboRepository.save(combo);
-
-
 
         } catch (ExistingComboNameFoundException e) {
             throw e;
@@ -75,60 +75,122 @@ public class ComboService {
         }
     }
 
-    public List<Combo> getAllCombos() {
-        return comboRepository.findAll();
+
+    public List<ComboDTO> getAllCombos() {
+        List<Combo> combos = comboRepository.findAllWithProducts();
+        return combos.stream().map(this::toComboDTO).toList();
+    }
+
+    public Double getComboCostById(Long comboId) {
+        Combo combo = comboRepository.findById(comboId)
+                .orElseThrow(() -> new IllegalArgumentException("Combo no encontrado con ID: " + comboId));
+        return combo.getTotalCost();
+    }
+
+    private ComboDTO toComboDTO(Combo combo) {
+        double totalCost = combo.getProducts().stream()
+                .mapToDouble(pc -> pc.getProduct().getUnitCost() * pc.getQuantity())
+                .sum();
+
+        double profit = (combo.getPrice() - totalCost) / totalCost * 100;
+
+        List<ProductComboDTO> productComboDTOs = combo.getProducts().stream()
+                .map(pc -> new ProductComboDTO(
+                        pc.getProduct().getProductId(),
+                        pc.getProduct().getName(),
+                        pc.getQuantity()
+                ))
+                .toList();
+
+        return new ComboDTO(combo.getId(), combo.getName(), productComboDTOs, combo.getPrice(), totalCost, profit);
     }
 
 
     public String deleteCombo(Long id) throws Exception {
         try {
+            System.out.println(id);
             Combo combo = comboRepository.findById(id).orElseThrow(() -> new ComboNotFoundException("Combo ID DOES NOT match any combo ID"));
+            System.out.println(combo);
+
+            boolean isComboInOrder = comboOrderRepository.existsByComboId(id);// Este método debe ser implementado en el repositorio
+            System.out.println(isComboInOrder);
+            if (isComboInOrder) {
+                throw new ComboInOrderException("Combo cannot be deleted as it is part of an order");
+            }
+
+
             comboRepository.delete(combo);
             return "Combo deleted successfully";
-        } catch (ComboNotFoundException e) {
+        } catch (ComboNotFoundException | ComboInOrderException e) {
             throw e;
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             throw new Exception("Combo CANNOT be deleted");
         }
     }
 
+
     public String modifyComboPrice(ComboPriceDTO comboPriceDTO) throws Exception {
         try {
-            Combo combo = comboRepository.findById(comboPriceDTO.getId())
-                    .orElseThrow(() -> new ComboNotFoundException("ComboId DOES NOT match any comboId"));
-
-            combo.setPrice(comboPriceDTO.getPrice());
+            Combo combo = comboRepository.findById(comboPriceDTO.getId()).orElseThrow(() -> new ComboNotFoundException("ComboId DOES NOT match any comboId"));
+            combo.updatePrice(comboPriceDTO.getPrice());
             comboRepository.save(combo);
-
-            return "Combo price updated successfully";
+            return "Product price updated successfully";
         } catch (ComboNotFoundException e) {
             throw e;
         } catch (Exception e) {
-            throw new Exception("Error updating combo price: " + e.getMessage());
+            throw new Exception("An unexpected error occurred while updating the combo profit");
         }
     }
 
-    private boolean isSameProductCombination(List<ProductCombo> existingProducts, List<ProductCombo> newProducts) {
-        if (existingProducts.size() != newProducts.size()) {
+    public String modifyComboProfit(ComboProfitDTO comboProfitDTO) throws Exception {
+        try {
+            Combo combo = comboRepository.findById(comboProfitDTO.getId())
+                    .orElseThrow(() -> new ComboNotFoundException("ComboId DOES NOT match any comboId"));
+            combo.updateProfit(comboProfitDTO.getProfit());
+            comboRepository.save(combo);
+            System.out.println(combo);
+            return "Combo profit updated successfully";
+        } catch (ComboNotFoundException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new Exception("An unexpected error occurred while updating the combo profit");
+        }
+    }
+
+    private boolean isSameProductCombination(List<ProductCombo> existingCombos, List<ProductCombo> newCombos) {
+        if (existingCombos.size() != newCombos.size()) {
             return false;
         }
 
+        existingCombos.sort(Comparator.comparing(pc -> pc.getProduct().getProductId()));
+        newCombos.sort(Comparator.comparing(pc -> pc.getProduct().getProductId()));
 
-        Map<Long, Integer> existingProductMap = new HashMap<>();
-        for (ProductCombo pc : existingProducts) {
-            existingProductMap.put(pc.getProduct().getProductId(), pc.getQuantity());
-        }
+        for (int i = 0; i < existingCombos.size(); i++) {
+            ProductCombo existing = existingCombos.get(i);
+            ProductCombo newCombo = newCombos.get(i);
 
-        for (ProductCombo pc : newProducts) {
-            if (!existingProductMap.containsKey(pc.getProduct().getProductId()) ||
-                    !existingProductMap.get(pc.getProduct().getProductId()).equals(pc.getQuantity())) {
+            if (!existing.getProduct().getProductId().equals(newCombo.getProduct().getProductId())
+                    || !existing.getQuantity().equals(newCombo.getQuantity())) {
                 return false;
             }
         }
 
         return true;
     }
+
+
+
+    public List<ProductCombo> getProductCombosByComboId(Long comboId) {
+        Optional<Combo> comboOptional = comboRepository.findById(comboId);
+        if (comboOptional.isEmpty()) {
+            throw new NoSuchElementException("Combo not found with ID: " + comboId);
+        }
+
+        return comboOptional.get().getProducts();
+    }
+
+
+
 
 
 

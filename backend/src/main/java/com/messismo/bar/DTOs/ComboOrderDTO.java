@@ -1,22 +1,18 @@
 package com.messismo.bar.DTOs;
 
+import com.messismo.bar.Entities.Combo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ModifyOrderDTO {
+public class ComboOrderDTO {
 
-    private Long orderId;
+    private Combo combo;
 
-    private List<ProductOrderDTO> productOrders;
-
-    private List<ComboOrderDTO> comboOrders;
-
+    private Integer quantity;
 }

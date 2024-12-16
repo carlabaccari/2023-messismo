@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { GrAddCircle } from 'react-icons/gr'
 import productsService from "../services/products.service";
 import ordersService from "../services/orders.service";
+import combosService from "../services/combo.service";
 
 
 const Form = styled.form`
@@ -207,6 +208,11 @@ const EditOrderForm = ({onCancel, orderId, onAdd}) => {
         // paymentMethods: ['cash', 'credit card', 'debit card'],
       });
     const [selectedProductNames, setSelectedProductNames] = useState([]);
+    const [selectedCombos, setSelectedCombos] = useState({});
+    const [combos, setCombos] = useState([]);
+    const [comboOptions, setComboOptions] = useState([]);
+    const [comboField, setComboField] = useState([{ combo: '', amount: '' }]);
+
 
 
     useEffect(() => {
@@ -232,6 +238,24 @@ const EditOrderForm = ({onCancel, orderId, onAdd}) => {
           .catch((error) => {
             console.error("Error al mostrar los productos", error);
           });
+
+          combosService
+                .getAllCombos()
+                .then((response) => {
+                    const formattedCombos = response.data.map(combo => ({
+                        id: combo.id,
+                        name: combo.name,
+                        price: combo.price,
+                        profit: combo.profit,
+                        products: combo.products
+                    }));
+                    setCombos(formattedCombos);
+                    const comboNames = formattedCombos.map(combo => combo.name);
+                    setComboOptions(comboNames);
+                })
+                .catch((error) => {
+                    console.error("Error al mostrar los combos", error);
+                });
     }, []);
 
     useEffect(() => {
@@ -251,60 +275,124 @@ const EditOrderForm = ({onCancel, orderId, onAdd}) => {
     }
 
     const orderSubmit = (data) => {
-        const orderedProducts = formField.map((form, index) => {
+        // Validar si hay al menos un producto o un combo con datos válidos
+        const hasValidProducts = formField.some((form, index) => {
             const productName = data[`product-${index}`];
-            const product = products.find(product => product.name === productName);
-            const amount = parseInt(data[`amount-${index}`]) || 0;
-
-            if (product && !isNaN(product.unitPrice) && !isNaN(amount)) {
-                return {
-                    id: product.id,
+            const amount = parseInt(data[`amount-${index}`]);
+            return productName && amount > 0;
+        });
+    
+        const hasValidCombos = comboField.some((form, index) => {
+            const comboName = data[`combo-${index}`];
+            const amount = parseInt(data[`amount-combo-${index}`]);
+            return comboName && amount > 0;
+        });
+    
+        if (!hasValidProducts && !hasValidCombos) {
+            alert("Debe seleccionar al menos un producto o un combo válido.");
+            return; // Termina la ejecución si no hay datos válidos
+        }
+    
+        // Mapear productos ordenados
+        const orderedProducts = formField
+            .map((form, index) => {
+                const productName = data[`product-${index}`];
+                const product = products.find((product) => product.name === productName);
+                const amount = parseInt(data[`amount-${index}`]) || 0;
+    
+                if (product && !isNaN(product.unitPrice) && !isNaN(amount)) {
+                    return {
+                        id: product.id,
+                        name: product.name,
+                        unitPrice: parseFloat(product.unitPrice),
+                        description: product.description,
+                        stock: product.stock,
+                        category: product.category,
+                        amount: amount,
+                        unitCost: parseFloat(product.unitCost),
+                    };
+                } else {
+                    return null;
+                }
+            })
+            .filter((product) => product !== null);
+    
+        // Mapear combos ordenados
+        const orderedCombos = comboField
+            .map((form, index) => {
+                const comboName = data[`combo-${index}`];
+                const combo = combos.find((combo) => combo.name === comboName);
+                const amount = parseInt(data[`amount-combo-${index}`]) || 0;
+    
+                if (combo && !isNaN(combo.price) && !isNaN(amount)) {
+                    return {
+                        id: combo.id,
+                        name: combo.name,
+                        price: combo.price,
+                        profit: combo.profit,
+                        amount: amount,
+                        products: combo.products,
+                    };
+                } else {
+                    return null;
+                }
+            })
+            .filter((combo) => combo !== null);
+    
+        // Construir datos de la orden
+        const orderDataNew = {
+            orderId: orderId,
+            productOrders: orderedProducts.map((product) => ({
+                product: {
+                    productId: product.id,
                     name: product.name,
-                    unitPrice: parseFloat(product.unitPrice),
+                    unitPrice: product.unitPrice,
                     description: product.description,
                     stock: product.stock,
                     category: product.category,
-                    amount: amount,
-                    unitCost: parseFloat(product.unitCost),
-                };
-            } else {
-                return null;
-            }
-        }).filter(product => product !== null);
-
-        const totalPrice = orderedProducts.reduce((total, product) => {
-            return total + product.unitPrice * product.amount;
-        }, 0);
-
-        const totalCost = orderedProducts.reduce((total, product) => {
-            return total + product.unitCost * product.amount;
-        }, 0);
-
-      
-
-        const orderDataNew= {
-            orderId: orderId,
-            productOrders: orderedProducts.map(product => ({
-              
-            product,
-            quantity: product.amount
+                    unitCost: product.unitCost,
+                },
+                quantity: product.amount,
+            })),
+            comboOrders: orderedCombos.map((combo) => ({
+                combo: {
+                    id: combo.id,
+                    name: combo.name,
+                    products: combo.products.map((productCombo) => {
+                        const fullProduct = products.find((p) => p.id === productCombo.productId);
+                        return {
+                            id: null, // ID del `ProductCombo` si está disponible
+                            comboId: combo.id, // ID del combo
+                            product: {
+                                productId: fullProduct?.id,
+                                name: fullProduct?.name,
+                                unitPrice: fullProduct?.unitPrice,
+                                unitCost: fullProduct?.unitCost,
+                                description: fullProduct?.description,
+                                stock: fullProduct?.stock,
+                                category: fullProduct?.category,
+                            },
+                            quantity: productCombo.quantity,
+                        };
+                    }),
+                    price: combo.price,
+                    profit: combo.profit,
+                },
+                quantity: combo.amount,
             })),
         };
-        
     
-  
-
+        // Enviar la orden al backend
         ordersService.modifyOrder(orderDataNew)
-        .then(response => {
-          console.log("Orden enviada con éxito:", response.data);
-          onCancel();
-        })
-        .catch(error => {
-          console.error("Error al enviar la orden:", error);
-        });
-
-       
+            .then((response) => {
+                console.log("Orden enviada con éxito:", response.data);
+                onCancel();
+            })
+            .catch((error) => {
+                console.error("Error al enviar la orden:", error);
+            });
     };
+    
 
     const handleAddProductsClick = () => {
             orderSubmit();
@@ -320,6 +408,11 @@ const EditOrderForm = ({onCancel, orderId, onAdd}) => {
         const product = products.find(product => product.name === productName);
         const amount = parseInt(watch(`amount-${index}`)) || 0;
         return total + (product?.unitPrice || 0) * amount;
+    }, 0) + comboField.reduce((total, form, index) => {
+        const comboName = watch(`combo-${index}`);
+        const combo = combos.find(combo => combo.name === comboName);
+        const amount = parseInt(watch(`amount-combo-${index}`)) || 0;
+        return total + (combo?.price || 0) * amount;
     }, 0);
 
     return(
@@ -338,7 +431,7 @@ const EditOrderForm = ({onCancel, orderId, onAdd}) => {
                                 name={`product-${index}`}
                                 control={control}
                                 defaultValue=""
-                                {...register(`product-${index}`, { required: true })}
+                                {...register(`product-${index}`)}
                                 render={({ field }) => (
                                     <Select
                                         {...field}
@@ -378,7 +471,7 @@ const EditOrderForm = ({onCancel, orderId, onAdd}) => {
                                 name={`amount-${index}`}
                                 type="number"
                                 {...register(`amount-${index}`, {
-                                    required: true,
+                                    
                                     min: 1,
                                     max: productStocks[selectedProducts[`product-${index}`]] || 1
                                 })}
@@ -440,6 +533,70 @@ const EditOrderForm = ({onCancel, orderId, onAdd}) => {
                     />
                     {errors.paymentmethod?.type === 'required' && <small className="fail">Field is empty</small>}
                 </div> */}
+
+{comboField.map((field, index) => (
+    <ProductContainer key={`combo-${index}`}>
+        <div className="form-product">
+            <Label>Combo</Label>
+            <Controller
+                name={`combo-${index}`}
+                control={control}
+                defaultValue=""
+                {...register(`combo-${index}`)}
+                render={({ field }) => (
+                    <Select
+                        {...field}
+                        onChange={(e) => {
+                            const selectedCombo = e.target.value;
+                            setSelectedCombos(prevState => ({
+                                ...prevState,
+                                [field.name]: selectedCombo
+                            }));
+                            field.onChange(selectedCombo);
+                        }}
+                    >
+                        <option value="" disabled>Select a combo</option>
+                        {comboOptions.map(combo => (
+                            <option
+                                key={combo}
+                                value={combo}
+                                disabled={Object.values(selectedCombos).includes(combo)}
+                            >
+                                {combo}
+                            </option>
+                        ))}
+                    </Select>
+                )}
+            />
+            {errors[`combo-${index}`]?.type === 'required' && <small className="fail">Field is empty</small>}
+        </div>
+
+        <div className="form-amount">
+            <Label>Units</Label>
+            <Input
+                name={`amount-combo-${index}`}
+                type="number"
+                {...register(`amount-combo-${index}`, {
+                    
+                    min: 1
+                })}
+            />
+            {errors[`amount-combo-${index}`]?.type === 'required' && <small className="fail">Field is empty</small>}
+        </div>
+
+        <div className="form-price">
+            {selectedCombos[`combo-${index}`] && (
+                <span>
+                    {`$${(
+                        combos.find(combo => combo.name === selectedCombos[`combo-${index}`])?.price *
+                        (parseInt(watch(`amount-combo-${index}`)) || 0)
+                    ).toFixed(2)}`}
+                </span>
+            )}
+        </div>
+    </ProductContainer>
+))}
+<AddIcon onClick={() => setComboField([...comboField, { combo: '', amount: '' }])} />
 
                 <div className="form-totalprice">
                     <Label>Total</Label>

@@ -25,4 +25,5 @@ public class ProductDTO {
 
     private Integer stock;
 
+    private Double profit;
 }

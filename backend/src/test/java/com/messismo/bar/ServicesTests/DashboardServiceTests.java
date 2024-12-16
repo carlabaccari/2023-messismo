@@ -2,6 +2,7 @@ package com.messismo.bar.ServicesTests;
 
 import com.messismo.bar.DTOs.DashboardRequestDTO;
 import com.messismo.bar.Entities.*;
+import com.messismo.bar.Exceptions.ComboNotFoundException;
 import com.messismo.bar.Exceptions.InvalidDashboardRequestedDate;
 import com.messismo.bar.Repositories.CategoryRepository;
 import com.messismo.bar.Repositories.OrderRepository;
@@ -55,7 +56,7 @@ public class DashboardServiceTests {
     }
 
     @Test
-    public void testGetQuantityProductDonut() {
+    public void testGetQuantityProductDonut() throws ComboNotFoundException {
 
         List<Order> orders = new ArrayList<>();
         Order order1 = createOrderWithProductsAndCategory("Donut", "Pastries", 3, 1.5, 1.0);
@@ -371,7 +372,7 @@ public class DashboardServiceTests {
     }
 
     @Test
-    public void testGetDailyInformation() {
+    public void testGetDailyInformation() throws ComboNotFoundException {
 
 
         List<Category> allCategories = categoryRepository.findAll();

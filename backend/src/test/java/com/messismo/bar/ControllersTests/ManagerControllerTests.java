@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 
@@ -113,63 +114,63 @@ public class ManagerControllerTests {
     @Test
     public void testUpdateProductCost_Success() throws Exception {
 
-        ProductPriceDTO validProductPriceDTO = new ProductPriceDTO(1L, 10.0);
-        when(productService.modifyProductCost(validProductPriceDTO)).thenReturn("Product cost modified successfully");
-        ResponseEntity<String> response = managerController.updateProductCost(validProductPriceDTO);
+        ProductCostDTO validProductCostDTO = new ProductCostDTO(1L, 10.0);
+        when(productService.modifyProductCost(validProductCostDTO)).thenReturn("Product cost modified successfully");
+        ResponseEntity<String> response = managerController.updateProductCost(validProductCostDTO);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("Product cost modified successfully", response.getBody());
-        verify(productService, times(1)).modifyProductCost(validProductPriceDTO);
+        verify(productService, times(1)).modifyProductCost(validProductCostDTO);
 
     }
 
     @Test
     public void testUpdateProductCost_MissingData() throws Exception {
 
-        ProductPriceDTO invalidProductPriceDTO = new ProductPriceDTO(null, 10.0);
-        ResponseEntity<String> response = managerController.updateProductCost(invalidProductPriceDTO);
+        ProductCostDTO invalidProductCostDTO = new ProductCostDTO(null, 10.0);
+        ResponseEntity<String> response = managerController.updateProductCost(invalidProductCostDTO);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertEquals("Missing data to modify product cost", response.getBody());
-        verify(productService, never()).modifyProductCost(invalidProductPriceDTO);
+        verify(productService, never()).modifyProductCost(invalidProductCostDTO);
 
     }
 
     @Test
     public void testUpdateProductCost_InvalidCost() throws Exception {
 
-        ProductPriceDTO invalidProductPriceDTO = new ProductPriceDTO(1L, -5.0);
-        ResponseEntity<String> response = managerController.updateProductCost(invalidProductPriceDTO);
+        ProductCostDTO invalidProductCostDTO = new ProductCostDTO(1L, -5.0);
+        ResponseEntity<String> response = managerController.updateProductCost(invalidProductCostDTO);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertEquals("Product cost CANNOT be less than 0.", response.getBody());
-        verify(productService, never()).modifyProductCost(invalidProductPriceDTO);
+        verify(productService, never()).modifyProductCost(invalidProductCostDTO);
 
     }
 
     @Test
     public void testUpdateProductCost_ProductNotFound() throws Exception {
 
-        ProductPriceDTO validProductPriceDTO = new ProductPriceDTO(1L, 10.0);
-        when(productService.modifyProductCost(validProductPriceDTO)).thenThrow(new ProductNotFoundException("Product not found"));
-        ResponseEntity<String> response = managerController.updateProductCost(validProductPriceDTO);
+        ProductCostDTO invalidProductCostDTO = new ProductCostDTO(1L, 10.0);
+        when(productService.modifyProductCost(invalidProductCostDTO)).thenThrow(new ProductNotFoundException("Product not found"));
+        ResponseEntity<String> response = managerController.updateProductCost(invalidProductCostDTO);
 
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertEquals("Product not found", response.getBody());
-        verify(productService, times(1)).modifyProductCost(validProductPriceDTO);
+        verify(productService, times(1)).modifyProductCost(invalidProductCostDTO);
 
     }
 
     @Test
     public void testUpdateProductCost_InternalServerError() throws Exception {
 
-        ProductPriceDTO validProductPriceDTO = new ProductPriceDTO(1L, 10.0);
-        when(productService.modifyProductCost(validProductPriceDTO)).thenThrow(new Exception("Internal error"));
-        ResponseEntity<String> response = managerController.updateProductCost(validProductPriceDTO);
+        ProductCostDTO validProductCostDTO = new ProductCostDTO(1L, 10.0);
+        when(productService.modifyProductCost(validProductCostDTO)).thenThrow(new Exception("Internal error"));
+        ResponseEntity<String> response = managerController.updateProductCost(validProductCostDTO);
 
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertEquals("Internal error", response.getBody());
-        verify(productService, times(1)).modifyProductCost(validProductPriceDTO);
+        verify(productService, times(1)).modifyProductCost(validProductCostDTO);
 
     }
 
@@ -523,9 +524,9 @@ public class ManagerControllerTests {
         GoalDTO goalDTO = new GoalDTO();
         goalDTO.setName("Test Goal");
         LocalDate today = LocalDate.now();
-        Date startingDate = java.sql.Date.valueOf(today);
+        Date startingDate = java.util.Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant());
         LocalDate tomorrow = today.plusDays(1);
-        Date endingDate = java.sql.Date.valueOf(tomorrow);
+        Date endingDate = java.util.Date.from(tomorrow.atStartOfDay(ZoneId.systemDefault()).toInstant());
         goalDTO.setStartingDate(startingDate);
         goalDTO.setEndingDate(endingDate);
         goalDTO.setObjectType("Product");
@@ -544,9 +545,9 @@ public class ManagerControllerTests {
         GoalDTO goalDTO = new GoalDTO();
         goalDTO.setName("Test Goal");
         LocalDate today = LocalDate.now();
-        Date startingDate = java.sql.Date.valueOf(today);
+        Date startingDate = java.util.Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant());
         LocalDate tomorrow = today.plusDays(1);
-        Date endingDate = java.sql.Date.valueOf(tomorrow);
+        Date endingDate = java.util.Date.from(tomorrow.atStartOfDay(ZoneId.systemDefault()).toInstant());
         goalDTO.setStartingDate(startingDate);
         goalDTO.setEndingDate(endingDate);
         ResponseEntity<String> response = managerController.addGoal(goalDTO);
@@ -559,23 +560,22 @@ public class ManagerControllerTests {
 
     @Test
     public void testAddGoal_Conflict_InvalidObjectType() {
-
         GoalDTO goalDTO = new GoalDTO();
         goalDTO.setName("Test Goal");
         LocalDate today = LocalDate.now();
-        Date startingDate = java.sql.Date.valueOf(today);
+        Date startingDate = java.util.Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant());
         LocalDate tomorrow = today.plusDays(1);
-        Date endingDate = java.sql.Date.valueOf(tomorrow);
+        Date endingDate = java.util.Date.from(tomorrow.atStartOfDay(ZoneId.systemDefault()).toInstant());
         goalDTO.setStartingDate(startingDate);
         goalDTO.setEndingDate(endingDate);
         goalDTO.setObjectType("InvalidType");
         goalDTO.setGoalObject("SomeObject");
         goalDTO.setGoalObjective(500.0);
+
         ResponseEntity<String> response = managerController.addGoal(goalDTO);
 
         assertEquals(HttpStatus.CONFLICT, response.getStatusCode());
         assertEquals("Missing information to create a goal", response.getBody());
-
     }
 
     @Test
@@ -584,9 +584,9 @@ public class ManagerControllerTests {
         GoalDTO goalDTO = new GoalDTO();
         goalDTO.setName("Test Goal");
         LocalDate today = LocalDate.now();
-        Date startingDate = java.sql.Date.valueOf(today);
+        Date startingDate = java.util.Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant());
         LocalDate tomorrow = today.plusDays(1);
-        Date endingDate = java.sql.Date.valueOf(tomorrow);
+        Date endingDate = java.util.Date.from(tomorrow.atStartOfDay(ZoneId.systemDefault()).toInstant());
         goalDTO.setStartingDate(startingDate);
         goalDTO.setEndingDate(endingDate);
         goalDTO.setObjectType("Category");
@@ -604,9 +604,9 @@ public class ManagerControllerTests {
         GoalDTO goalDTO = new GoalDTO();
         goalDTO.setName("Test Goal");
         LocalDate today = LocalDate.now();
-        Date startingDate = java.sql.Date.valueOf(today);
+        Date startingDate = java.util.Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant());
         LocalDate tomorrow = today.plusDays(1);
-        Date endingDate = java.sql.Date.valueOf(tomorrow);
+        Date endingDate = java.util.Date.from(tomorrow.atStartOfDay(ZoneId.systemDefault()).toInstant());
         goalDTO.setStartingDate(startingDate);
         goalDTO.setEndingDate(endingDate);
         goalDTO.setObjectType("Product");
@@ -682,9 +682,9 @@ public class ManagerControllerTests {
         GoalDTO goalDTO = new GoalDTO();
         goalDTO.setName("Test Goal");
         LocalDate today = LocalDate.now();
-        Date startingDate = java.sql.Date.valueOf(today);
+        Date startingDate = java.util.Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant());
         LocalDate yesterday = today.minusDays(1);
-        Date endingDate = java.sql.Date.valueOf(yesterday);
+        Date endingDate = java.util.Date.from(yesterday.atStartOfDay(ZoneId.systemDefault()).toInstant());
         goalDTO.setStartingDate(startingDate);
         goalDTO.setEndingDate(endingDate);
         goalDTO.setObjectType("Category");

@@ -2,6 +2,7 @@ package com.messismo.bar.Services;
 
 import com.messismo.bar.DTOs.DashboardRequestDTO;
 import com.messismo.bar.Entities.Category;
+import com.messismo.bar.Entities.ComboOrder;
 import com.messismo.bar.Entities.Order;
 import com.messismo.bar.Entities.ProductOrder;
 import com.messismo.bar.Exceptions.InvalidDashboardRequestedDate;
@@ -42,7 +43,7 @@ public class DashboardService {
             }
             return response;
         } catch (InvalidDashboardRequestedDate e) {
-          throw e;
+            throw e;
         }catch (Exception e) {
             throw new Exception("CANNOT get information for dashboards right now");
         }
@@ -125,6 +126,10 @@ public class DashboardService {
         response.put("averageByOrder", averageByOrder);
         response.put("quantityProductDonut", getQuantityProductDonut(filteredOrdersByCategories));
         response.put("earningProductDonut", getEarningProductDonut(filteredOrdersByCategories));
+        response.put("quantityComboDonut", getQuantityComboDonut(filteredOrdersByCategories));
+        response.put("earningComboDonut", getEarningComboDonut(filteredOrdersByCategories));
+        response.put("quantityProductAndComboDonut", getQuantityProductAndComboDonut(filteredOrdersByCategories));
+        response.put("earningProductAndComboDonut", getEarningProductAndComboDonut(filteredOrdersByCategories));
         response.put("quantityCategoryDonut", getQuantityCategoryDonut(filteredOrdersByCategories));
         response.put("earningCategoryDonut", getEarningCategoryDonut(filteredOrdersByCategories));
         response.put("labels", new ArrayList<>(years));
@@ -172,6 +177,10 @@ public class DashboardService {
         result.put("averageByOrder", averageByOrder);
         result.put("quantityProductDonut", getQuantityProductDonut(filteredOrders));
         result.put("earningProductDonut", getEarningProductDonut(filteredOrders));
+        result.put("quantityProductAndComboDonut", getQuantityProductAndComboDonut(filteredOrdersByCategories));
+        result.put("earningProductAndComboDonut", getEarningProductAndComboDonut(filteredOrdersByCategories));
+        result.put("quantityComboDonut", getQuantityComboDonut(filteredOrdersByCategories));
+        result.put("earningComboDonut", getEarningComboDonut(filteredOrdersByCategories));
         result.put("quantityCategoryDonut", getQuantityCategoryDonut(filteredOrders));
         result.put("earningCategoryDonut", getEarningCategoryDonut(filteredOrders));
         result.put("labels", new ArrayList<>(orderByDayEarnings.keySet()));
@@ -218,6 +227,10 @@ public class DashboardService {
         result.put("averageByOrder", averageByOrder);
         result.put("quantityProductDonut", getQuantityProductDonut(filteredOrders));
         result.put("earningProductDonut", getEarningProductDonut(filteredOrders));
+        result.put("quantityComboDonut", getQuantityComboDonut(filteredOrdersByCategories));
+        result.put("earningComboDonut", getEarningComboDonut(filteredOrdersByCategories));
+        result.put("quantityProductAndComboDonut", getQuantityProductAndComboDonut(filteredOrdersByCategories));
+        result.put("earningProductAndComboDonut", getEarningProductAndComboDonut(filteredOrdersByCategories));
         result.put("quantityCategoryDonut", getQuantityCategoryDonut(filteredOrders));
         result.put("earningCategoryDonut", getEarningCategoryDonut(filteredOrders));
         result.put("labels", new ArrayList<>(orderByDateEarnings.keySet()));
@@ -316,4 +329,83 @@ public class DashboardService {
         }
         return productSalesMap;
     }
+
+    public HashMap<String, Integer> getQuantityComboDonut(List<Order> orders) {
+        HashMap<String, Integer> comboSalesMap = new HashMap<>();
+        for (Order order : orders) {
+            for (ComboOrder comboOrder : order.getComboOrders()) {
+                String comboName = comboOrder.getComboName();
+                comboSalesMap.put(
+                        comboName,
+                        comboSalesMap.getOrDefault(comboName, 0) + comboOrder.getQuantity()
+                );
+            }
+        }
+        return comboSalesMap;
+    }
+
+    public HashMap<String, Double> getEarningComboDonut(List<Order> orders) {
+        HashMap<String, Double> comboEarningsMap = new HashMap<>();
+        for (Order order : orders) {
+            for (ComboOrder comboOrder : order.getComboOrders()) {
+                String comboName = comboOrder.getComboName();
+                double comboRevenue = comboOrder.getComboUnitPrice() * comboOrder.getQuantity();
+                comboEarningsMap.put(
+                        comboName,
+                        comboEarningsMap.getOrDefault(comboName, 0.0) + comboRevenue
+                );
+            }
+        }
+        return comboEarningsMap;
+    }
+
+    public HashMap<String, Integer> getQuantityProductAndComboDonut(List<Order> orders) {
+        HashMap<String, Integer> combinedSalesMap = new HashMap<>();
+        int totalProductQuantity = 0;
+        int totalComboQuantity = 0;
+
+        for (Order order : orders) {
+            for (ProductOrder productOrder : order.getProductOrders()) {
+                totalProductQuantity += productOrder.getQuantity();
+            }
+
+
+            for (ComboOrder comboOrder : order.getComboOrders()) {
+                totalComboQuantity += comboOrder.getQuantity();
+            }
+        }
+
+
+        combinedSalesMap.put("Products", totalProductQuantity);
+        combinedSalesMap.put("Combos", totalComboQuantity);
+
+        return combinedSalesMap;
+    }
+
+
+    public HashMap<String, Double> getEarningProductAndComboDonut(List<Order> orders) {
+        HashMap<String, Double> combinedRevenueMap = new HashMap<>();
+        double totalProductRevenue = 0.0;
+        double totalComboRevenue = 0.0;
+
+        for (Order order : orders) {
+            for (ProductOrder productOrder : order.getProductOrders()) {
+                totalProductRevenue += productOrder.getQuantity() * (productOrder.getProductUnitPrice() - productOrder.getProductUnitCost());
+            }
+
+
+            for (ComboOrder comboOrder : order.getComboOrders()) {
+                double comboRevenue = comboOrder.getQuantity() * (comboOrder.getComboUnitPrice() - comboOrder.getComboUnitCost());
+                totalComboRevenue += comboRevenue;
+            }
+        }
+
+
+        combinedRevenueMap.put("Products", totalProductRevenue);
+        combinedRevenueMap.put("Combos", totalComboRevenue);
+
+        return combinedRevenueMap;
+    }
+
+
 }

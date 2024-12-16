@@ -21,11 +21,49 @@ public class OrderService {
 
     private final ProductOrderRepository productOrderRepository;
 
+    private final ComboOrderRepository comboOrderRepository;
+
+    private final ComboRepository comboRepository;
+
     public String addNewOrder(OrderRequestDTO orderRequestDTO) throws Exception {
         try {
+            System.out.println(orderRequestDTO);
+
             User employee = userRepository.findByEmail(orderRequestDTO.getRegisteredEmployeeEmail()).orElseThrow(() -> new UserNotFoundException("No user has that email"));
-            NewProductOrderListDTO newProductOrderListDTO = createProductOrder(orderRequestDTO.getProductOrders());
-            Order newOrder = new Order(employee, orderRequestDTO.getDateCreated(), newProductOrderListDTO.getProductOrderList(), newProductOrderListDTO.getTotalPrice(), newProductOrderListDTO.getTotalCost());
+
+            if ((orderRequestDTO.getProductOrders() == null || orderRequestDTO.getProductOrders().isEmpty()) &&
+                    (orderRequestDTO.getComboOrders() == null || orderRequestDTO.getComboOrders().isEmpty())) {
+                throw new IllegalArgumentException("Order must contain at least one product or combo");
+            }
+
+            NewProductOrderListDTO newProductOrderListDTO = new NewProductOrderListDTO(new ArrayList<>(), 0.0, 0.0);
+            if (orderRequestDTO.getProductOrders() != null && !orderRequestDTO.getProductOrders().isEmpty()) {
+                newProductOrderListDTO = createProductOrder(orderRequestDTO.getProductOrders());
+            }
+
+            System.out.println(newProductOrderListDTO);
+
+            NewComboOrderListDTO newComboOrderListDTO = new NewComboOrderListDTO(new ArrayList<>(), 0.0, 0.0);
+            if (orderRequestDTO.getComboOrders() != null && !orderRequestDTO.getComboOrders().isEmpty()) {
+                newComboOrderListDTO = createComboOrder(orderRequestDTO.getComboOrders());
+            }
+
+            System.out.println(newComboOrderListDTO);
+
+            double totalCost = newProductOrderListDTO.getTotalCost() + newComboOrderListDTO.getTotalCost();
+            double totalPrice = newProductOrderListDTO.getTotalPrice() + newComboOrderListDTO.getTotalPrice();
+
+            System.out.println(newComboOrderListDTO.getTotalCost());
+            System.out.println(newComboOrderListDTO.getTotalPrice());
+
+
+            if (totalPrice <= 0 || totalCost <= 0) {
+                throw new IllegalArgumentException("Order total cost or price cannot be zero");
+            }
+
+
+            Order newOrder = new Order(employee, orderRequestDTO.getDateCreated(), newProductOrderListDTO.getProductOrderList(), newComboOrderListDTO.getComboOrderList(), totalPrice, totalCost);
+            System.out.println(newOrder);
             orderRepository.save(newOrder);
             return "Order created successfully";
         } catch (UserNotFoundException | ProductQuantityBelowAvailableStock e) {
@@ -50,19 +88,53 @@ public class OrderService {
 
     public String modifyOrder(ModifyOrderDTO modifyOrderDTO) throws Exception {
         try {
-            Order order = orderRepository.findById(modifyOrderDTO.getOrderId()).orElseThrow(() -> new OrderNotFoundException("Order not found"));
-            NewProductOrderListDTO newProductOrderListDTO = createProductOrder(modifyOrderDTO.getProductOrders());
-            order.updateProductOrders(newProductOrderListDTO.getProductOrderList());
-            order.updateTotalPrice(newProductOrderListDTO.getTotalPrice());
-            order.updateTotalCost(newProductOrderListDTO.getTotalCost());
+            System.out.println(modifyOrderDTO);
+
+
+            Order order = orderRepository.findById(modifyOrderDTO.getOrderId())
+                    .orElseThrow(() -> new OrderNotFoundException("Order not found"));
+
+
+            if ((modifyOrderDTO.getProductOrders() == null || modifyOrderDTO.getProductOrders().isEmpty()) &&
+                    (modifyOrderDTO.getComboOrders() == null || modifyOrderDTO.getComboOrders().isEmpty())) {
+                throw new IllegalArgumentException("The order must contain at least one product or combo");
+            }
+
+
+            NewProductOrderListDTO newProductOrderListDTO = new NewProductOrderListDTO(new ArrayList<>(), 0.0, 0.0);
+            NewComboOrderListDTO newComboOrderListDTO = new NewComboOrderListDTO(new ArrayList<>(), 0.0, 0.0);
+
+
+            if (modifyOrderDTO.getProductOrders() != null && !modifyOrderDTO.getProductOrders().isEmpty()) {
+                newProductOrderListDTO = createProductOrder(modifyOrderDTO.getProductOrders());
+                order.updateProductOrders(newProductOrderListDTO.getProductOrderList());
+            }
+
+            if (modifyOrderDTO.getComboOrders() != null && !modifyOrderDTO.getComboOrders().isEmpty()) {
+                newComboOrderListDTO = createComboOrder(modifyOrderDTO.getComboOrders());
+                order.updateComboOrders(newComboOrderListDTO.getComboOrderList());
+            }
+
+            double totalPrice = newProductOrderListDTO.getTotalPrice() + newComboOrderListDTO.getTotalPrice();
+            double totalCost = newProductOrderListDTO.getTotalCost() + newComboOrderListDTO.getTotalCost();
+
+            order.updateTotalPrice(totalPrice);
+            order.updateTotalCost(totalCost);
+
+            System.out.println(newComboOrderListDTO);
+            System.out.println(newProductOrderListDTO);
+            System.out.println(order);
+
             orderRepository.save(order);
             return "Order modified successfully";
+
         } catch (ProductQuantityBelowAvailableStock | OrderNotFoundException e) {
             throw e;
         } catch (Exception e) {
             throw new Exception("CANNOT modify this order at the moment");
         }
     }
+
 
     public List<Order> getAllOrders() {
         return orderRepository.findAll();
@@ -99,4 +171,48 @@ public class OrderService {
         }
         return NewProductOrderListDTO.builder().productOrderList(productOrderList).totalCost(totalCost).totalPrice(totalPrice).build();
     }
+
+
+    public NewComboOrderListDTO createComboOrder(List<ComboOrderDTO> comboOrderListDTO) throws ProductQuantityBelowAvailableStock {
+        List<ComboOrder> comboOrderList = new ArrayList<>();
+        double totalPrice = 0.00;
+        double totalCost = 0.00;
+
+        for (ComboOrderDTO comboOrderDTO : comboOrderListDTO) {
+            Combo combo = comboOrderDTO.getCombo();
+
+            for (ProductCombo productCombo : combo.getProducts()) {
+                Product product = productCombo.getProduct();
+
+                int totalRequiredQuantity = productCombo.getQuantity() * comboOrderDTO.getQuantity();
+
+
+                if (product.getStock() < totalRequiredQuantity) {
+                    throw new ProductQuantityBelowAvailableStock(
+                            "Not enough stock of product: " + product.getName());
+                }
+
+
+                product.removeStock(totalRequiredQuantity);
+                productRepository.save(product);
+
+
+
+
+            }
+            totalCost += (combo.getTotalCost() * comboOrderDTO.getQuantity());
+            totalPrice += (combo.getPrice() * comboOrderDTO.getQuantity());
+
+
+
+            ComboOrder comboOrder = new ComboOrder(combo.getId(), combo.getName(), combo.getPrice(), combo.getTotalCost(), comboOrderDTO.getQuantity());
+            comboOrderRepository.save(comboOrder);
+            comboOrderList.add(comboOrder);
+
+        }
+
+
+        return NewComboOrderListDTO.builder().comboOrderList(comboOrderList).totalCost(totalCost).totalPrice(totalPrice).build();
+    }
+
 }

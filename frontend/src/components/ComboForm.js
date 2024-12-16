@@ -13,6 +13,7 @@ import Chip from '@mui/material/Chip';
 import CloseIcon from '@mui/icons-material/Close';
 import { Accordion, AccordionSummary, AccordionDetails, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ComboFormValidation from "../ComboFormValidation";
 
 const ComboForm = (props) => {
 
@@ -40,18 +41,13 @@ const ComboForm = (props) => {
       p.productId === product.productId ? { ...p, quantity: p.quantity + 1 } : p
     ));
   } else {
-    if (productExists) {
-        setSelectedProducts(prevProducts => prevProducts.map(p =>
-          p.productId === product.productId ? { ...p, quantity: p.quantity + 1 } : p
-        ));
-      } else {
-
-        
-        setSelectedProducts([...selectedProducts, { ...product, quantity: 1, unitCost: product.unitCost }]);
+    const unitCost = product.unitCost || 0;
+    console.log(product);
+        setSelectedProducts([...selectedProducts, { ...product, quantity: 1, unitCost: unitCost }]);
         console.log(selectedProducts);
       }
   }
-      };
+    
 
       const handleQuantityChange = (productId, newQuantity) => {
         setSelectedProducts((prevSelectedProducts) =>
@@ -96,11 +92,13 @@ const ComboForm = (props) => {
       };
 
       const handleAddCombo = () => {
-        const validationErrors = FormValidation({
-            name: name,
-            products: products,
-        
-          });
+        const validationErrors = ComboFormValidation({
+          name,
+          price,
+          profit: profitPercentage,
+          selectedProducts,
+      });
+          console.log(validationErrors);
         
 
         if (Object.keys(validationErrors).length > 0) {
@@ -108,7 +106,7 @@ const ComboForm = (props) => {
             console.log(validationErrors);
            
         
-        }
+        } else {
         const newComboData = {
             name: name,
             products: selectedProducts,
@@ -128,6 +126,7 @@ const ComboForm = (props) => {
           setPrice(null);
           setProducts([]);
           setProfitPercentage(0);
+        }
          
             
       }
@@ -214,40 +213,8 @@ const ComboForm = (props) => {
             },
           }}
       />
-      <p style={{ color: errors.category ? "red" : "black" }}>Products *</p>
-      <Select
-        labelId="demo-simple-select-label"
-        id="demo-simple-select"
-        multiple
-        value={selectedProducts}
-        onChange={handleProductChange}
-        error={errors.category ? true : false}
-        helperText={errors.category || ''}
-        style={{ width: '80%', marginTop: '3%', marginBottom: '3%', fontSize: '1.1rem'}}
-        renderValue={(selected) => (
-            <div>
-              {selected.map((product) => (
-                <Chip key={product.productId} label={`${product.name} x${product.quantity}`} />
-              ))}
-            </div>
-          )}
-          
-        InputProps={{
-          style: {
-            fontSize: '1.1rem',
-            }} }
-        FormHelperTextProps={{
-          style: {
-            fontSize: '1.1rem',
-          },
-        }}
-      >
-        {products.map(product => (
-          <MenuItem key={product.productId} value={product}>
-            {product.name}
-          </MenuItem>
-        ))}
-      </Select>
+      <p style={{ color: errors.selectedProducts ? "red" : "black" }}>Products *</p>
+     
       <Accordion>
     <AccordionSummary expandIcon={<ExpandMoreIcon />}>
       <Typography>Productos</Typography>
@@ -263,6 +230,11 @@ const ComboForm = (props) => {
       ))}
     </AccordionDetails>
   </Accordion>
+  {errors.selectedProducts && (
+  <p style={{ color: "red", fontSize: "0.9rem", marginTop: "0.5rem" }}>
+    {errors.selectedProducts}
+  </p>
+)}
       <p>Selected Products</p>
       <div style={{ display: 'flex', flexDirection: 'column', width: '80%' }}>
     {/* Encabezado de las columnas */}
@@ -331,14 +303,26 @@ const ComboForm = (props) => {
       />
 
 
-            <p>Profit (%)</p>
+            <p style={{ color: errors.price ? "red" : "black" }}>Profit (%)</p>
             <TextField
                 required
                 id="profit"
                 value={profitPercentage || ''}
+                error={errors.profit ? true : false}
+                helperText={errors.profit || ''}
                 onChange={handleProfitChange}
                 variant="outlined"
                 style={{ width: '80%', marginTop: '3%', marginBottom: '3%' }}
+                InputProps={{
+                  style: {
+                    fontSize: '1.1rem', 
+                    inputMode: 'numeric', pattern: '[0-9]*'
+                  },}}
+                  FormHelperTextProps={{
+                    style: {
+                      fontSize: '1.1rem', 
+                    },
+                  }}
             />
      
       
@@ -360,6 +344,7 @@ const ComboForm = (props) => {
             width: "40%",
             fontSize: '1rem'
           }}
+      
           onClick={handleAddCombo}
 
         >

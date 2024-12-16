@@ -22,6 +22,7 @@ const addCombos = (combo) => {
         quantity: productCombo.quantity, 
     })),
     price: combo.price,
+    profit: combo.profit
   };
 
   console.log(newCombo);
@@ -45,11 +46,74 @@ const addCombos = (combo) => {
   });
 };
 
+
+const updateComboPrice = (modifiedCombo) => {
+  
+
+  return axios.put(
+    apiUrl + "/api/v1/manager/combo/updatePrice",
+    modifiedCombo,
+    { headers: authHeader(), 
+      method: "Post", 
+      "Content-Type": "application/json" }
+  )
+  .then((response) => {
+    console.log("Precio modificado con éxito:", response.data);
+  })
+  .catch((error) => {
+    
+    console.error("Error al modificar el precio del combo:", error);
+  });
+};
+
+const updateComboProfit = (modifiedCombo) => {
+  
+
+  return axios.put(
+    apiUrl + "/api/v1/manager/combo/updateProfit",
+    modifiedCombo,
+    { headers: authHeader(), 
+      method: "Post", 
+      "Content-Type": "application/json" }
+  )
+  .then((response) => {
+    console.log("Profit modificado con éxito:", response.data);
+  })
+  .catch((error) => {
+    
+    console.error("Error al modificar el profit del combo:", error);
+  });
+};
+
+const getComboCost = (comboId) => {
+  return axios.get(
+    apiUrl + "/api/v1/validatedEmployee/getComboCost/" + comboId,
+    { headers: authHeader(), method: "GET", "Content-Type": "application/json" }
+  );
+};
+
+const deleteCombo = (comboId) => {
+  console.log("comboId", comboId)
+  return axios
+    .delete(
+      apiUrl + "/api/v1/manager/combo/deleteCombo/" + comboId,
+      {
+        headers: authHeader(),
+        method: "DELETE",
+        "Content-Type": "application/json",
+      }
+    )
+
+
+};
+
 const combosService = {
     getAllCombos,
     addCombos,
-
-  
+    updateComboPrice,
+    updateComboProfit,
+    getComboCost,
+    deleteCombo
   };
   
   export default combosService;

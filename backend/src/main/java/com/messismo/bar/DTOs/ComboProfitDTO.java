@@ -5,18 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ModifyOrderDTO {
+public class ComboProfitDTO {
 
-    private Long orderId;
+    private Long id;
 
-    private List<ProductOrderDTO> productOrders;
-
-    private List<ComboOrderDTO> comboOrders;
+    private Double profit;
 
 }

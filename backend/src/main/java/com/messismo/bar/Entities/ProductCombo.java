@@ -1,5 +1,4 @@
 package com.messismo.bar.Entities;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -24,10 +23,7 @@ public class ProductCombo {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", referencedColumnName = "product_id")
-    @JsonIgnore
     private Product product;
-
-
 
     @Column(name = "quantity")
     private Integer quantity;
@@ -36,4 +32,21 @@ public class ProductCombo {
         this.product = product;
         this.quantity = quantity;
     }
+
+    public Double getTotalCost() {
+        if (this.product == null || this.product.getUnitCost() == null) {
+            return 0.0;
+        }
+        return this.product.getUnitCost() * this.quantity;
+    }
+
+    public Product getProduct() {
+        return product;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
+    }
+
+
 }

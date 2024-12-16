@@ -2,12 +2,16 @@ package com.messismo.bar.Services;
 
 import com.messismo.bar.DTOs.*;
 import com.messismo.bar.Entities.Category;
+import com.messismo.bar.Entities.Combo;
 import com.messismo.bar.Entities.Product;
+import com.messismo.bar.Entities.ProductCombo;
 import com.messismo.bar.Exceptions.CategoryNotFoundException;
 import com.messismo.bar.Exceptions.ExistingCategoryFoundException;
 import com.messismo.bar.Exceptions.ExistingProductFoundException;
 import com.messismo.bar.Exceptions.ProductNotFoundException;
 import com.messismo.bar.Repositories.CategoryRepository;
+import com.messismo.bar.Repositories.ComboRepository;
+import com.messismo.bar.Repositories.ProductComboRepository;
 import com.messismo.bar.Repositories.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,6 +29,10 @@ public class ProductService {
     private final CategoryRepository categoryRepository;
 
     private final CategoryService categoryService;
+
+    private final ProductComboRepository productComboRepository;
+
+    private final ComboRepository comboRepository;
 
     public String addProduct(ProductDTO productDTO) throws Exception {
         try {
@@ -78,11 +86,20 @@ public class ProductService {
         }
     }
 
-    public String modifyProductCost(ProductPriceDTO productPriceDTO) throws Exception {
+    public String modifyProductCost(ProductCostDTO productCostDTO) throws Exception {
         try {
-            Product product = productRepository.findByProductId(productPriceDTO.getProductId()).orElseThrow(() -> new ProductNotFoundException("ProductId DOES NOT match any productId"));
-            product.updateUnitCost(productPriceDTO.getUnitPrice());
+            System.out.println(productCostDTO);
+            Product product = productRepository.findByProductId(productCostDTO.getProductId()).orElseThrow(() -> new ProductNotFoundException("ProductId DOES NOT match any productId"));
+            product.updateUnitCost(productCostDTO.getUnitCost());
             productRepository.save(product);
+
+            List<Combo> affectedCombos = comboRepository.findByProducts_Product(productCostDTO.getProductId());
+            for (Combo combo : affectedCombos) {
+                combo.recalculateProfit();
+                comboRepository.save(combo);
+            }
+
+
             return "Product cost updated successfully";
         } catch (ProductNotFoundException e) {
             throw e;

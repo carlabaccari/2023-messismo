@@ -359,6 +359,10 @@ const handleCloseOrder = () => {
         setIsEditFormVisible(true);
     }
 
+    const handleAddCombosOrder = () => {
+
+  }
+
     const handleCloseEditOrderForm = () => {
         setIsEditFormVisible(false);
 
@@ -377,7 +381,7 @@ const handleCloseOrder = () => {
         <h1 style={{ fontSize: "1.7rem", marginBottom: "3%" }}>Order {orderId}</h1>
         <Buttons>
           <Button type="button" className="placeorder" onClick={handleAddProductsOrder}>
-            Add Products
+            Add Items
           </Button>
           <Button type="button" className="cancel" onClick={handleCloseOrderDetails}>
             Close Order

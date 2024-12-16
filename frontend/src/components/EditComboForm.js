@@ -17,33 +17,30 @@ import Fab from "@mui/material/Fab";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
 import modifyProductStock from "../services/products.service";
-import { IconButton } from "@mui/material";
+import { IconButton, PopoverPaper } from "@mui/material";
+import Radio from '@mui/material/Radio';
+import RadioGroup from '@mui/material/RadioGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormLabel from '@mui/material/FormLabel';
+import combosService from "../services/combo.service";
+import ComboFormValidation from "../ComboFormValidation";
+import EditComboValidation from "../EditComboValidation";
+
 const EditComboForm = (props) => {
-  const [nombre, setNombre] = useState("");
-  const [categoria, setCategoria] = useState("");
-  const [descripcion, setDescripcion] = useState("");
-  const [precio, setPrecio] = useState("");
+  const [precio, setPrecio] = useState(props.combo.price);
   const { user: currentUser } = useSelector((state) => state.auth);
   const token = currentUser.access_token;
   const role = currentUser.role;
   const [errors, setErrors] = useState({});
-  const [stock, setStock] = useState("");
   const [isOperationSuccessful, setIsOperationSuccessful] = useState(false);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [alertText, setAlertText] = useState("");
-  const [newStock, setNewStock] = useState(props.product.stock)
-  const [profit, setProfit] = useState(null);
-  const handleNombreChange = (event) => {
-    setNombre(event.target.value);
-  };
+  const [profit, setProfit] = useState(props.combo.profit);
+  const [selectedOption, setSelectedOption] = useState("");
 
-  const handleCategoriaChange = (event: SelectChangeEvent) => {
-    setCategoria(event.target.value);
-  };
+ 
 
-  const handleDescripcionChange = (event) => {
-    setDescripcion(event.target.value);
-  };
+  
 
   const handlePrecioChange = (event) => {
     setPrecio(event.target.value);
@@ -53,128 +50,80 @@ const EditComboForm = (props) => {
     setProfit(event.target.value);
   };
 
-  const handleStockChange = (event) => {
-    setStock(event.target.value);
-  };
 
   const cancelarButton = (event) => {
     props.onClose();
   };
 
-  const handleEditProduct = async () => {
-    const validationErrors = EditFormValidation({
-      price: precio,
-      stock: stock,
-    });
-
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      console.log(validationErrors);
-    } else {
-      //productsService.updateProductStock(stockDTO)
-      if (precio !== "") {
-        try {
-          const response = await productsService
-            .updateProductPrice(props.product.productId, precio)
-            .then((response) => {
-              console.log(response);
-              setIsOperationSuccessful(true);
-              setAlertText("Product updated successfully");
-              setOpenSnackbar(true);
-            });
-        } catch (error) {
-          console.error("Error al buscar productos", error);
-          setIsOperationSuccessful(false);
-          setAlertText("Failed to modify price");
-          setOpenSnackbar(true);
-        }
-      }
-
-  }
-
-  };
+ 
 
   const handleEditCombo = async () => {
-    const validationErrors = EditFormValidation({
-      price: precio,
-      profit: profit,
-    });
-
-    if (Object.keys(validationErrors).length > 0) {
-      setErrors(validationErrors);
-      console.log(validationErrors);
-    } else {
-      if (precio !== "") {
-        try {
-          const response = await productsService
-            .updateProductPrice(props.product.productId, precio)
-            .then((response) => {
-              console.log(response);
-              setIsOperationSuccessful(true);
-              setAlertText("Product updated successfully");
-              setOpenSnackbar(true);
-            });
-        } catch (error) {
-          console.error("Error al buscar productos", error);
-          setIsOperationSuccessful(false);
-          setAlertText("Failed to modify price");
-          setOpenSnackbar(true);
+    const comboId = props.combo.id;
+  
+    try {
+      let response;
+  
+      if (selectedOption === "Edit Price") {
+        
+        const validationErrors = ComboFormValidation({ price: precio });
+        if (validationErrors.price) {
+          setErrors(validationErrors.price);
+          console.log(validationErrors);
+          return; 
         }
+        setErrors({});
+  
+        
+        const comboUpdated = {
+          id: comboId,
+          price: precio,
+        };
+        response = await combosService.updateComboPrice(comboUpdated);
+        console.log(response);
+        setIsOperationSuccessful(true);
+        setAlertText("Combo price updated successfully");
+      } else if (selectedOption === "Edit Profit") {
+        const validationErrors = ComboFormValidation({ profit: profit });
+        if (validationErrors.profit) {
+          setErrors(validationErrors);
+          console.log(validationErrors);
+          return; 
+        }
+  
+    
+        const comboUpdated = {
+          id: comboId,
+          profit: profit,
+        };
+        response = await combosService.updateComboProfit(comboUpdated);
+        console.log(response);
+        setIsOperationSuccessful(true);
+        setAlertText("Combo profit updated successfully");
       }
+  
+   
+      const updatedComboResponse = await combosService.getAllCombos();
+      props.setCombos(updatedComboResponse.data);
+      props.onClose();
+    } catch (error) {
+      console.error("Error", error);
+      setIsOperationSuccessful(false);
+      setAlertText("Failed to modify combo");
+    } finally {
+      setOpenSnackbar(true);
+    }
+  };
+  
+  
+  
 
-  }
-
+  const handleRadioChange = (event) => {
+    setSelectedOption(event.target.value);
   };
 
-  const addStock = () => {
-    setNewStock(newStock + 1);
-  }
-
-  const removeStock = () => {
-    if (newStock - 1 >= 0){
-    setNewStock(newStock - 1);
-    }
-  }
-
-  const handleModifyStock = () => {
-    const productStock = newProductStock();
-    console.log(productStock)
-
-  }
-
-  const newProductStock = () => {
-   if (newStock !== props.product.stock){
-    
-    console.log(newStock)
-    console.log(props.productStock)
-    if (newStock < props.product.stock)
-    {
-
-      const modifyProductStock = 
-    {
-      productId: props.product.productId,
-      operation: "substract",
-      modifyStock: props.product.stock - newStock,
-
-    }
-    return modifyProductStock
-    }
-    else {
-      const modifyProductStock = 
-      {
-        productId: props.product.productId,
-        operation: "add",
-        modifyStock: newStock - props.product.stock,
   
-      }
 
-      return modifyProductStock
-  }
-}
-else {
-  return 0;
-}
-}
+  
 
 
   return (
@@ -185,9 +134,25 @@ else {
        
 
 
-      <p>Price</p>
+      
       {role === "ADMIN" || role === "MANAGER" ? (
         <div>
+           <FormControl>
+      <RadioGroup
+        aria-labelledby="demo-radio-buttons-group-label"
+        defaultValue="female"
+        name="radio-buttons-group"
+        value={selectedOption}
+        onChange={handleRadioChange}
+      >
+        <FormControlLabel value="Edit Price" control={<Radio />} label="Edit Price" />
+        <FormControlLabel value="Edit Profit" control={<Radio />} label="Edit Profit" />
+  
+      </RadioGroup>
+    </FormControl>
+    {selectedOption === "Edit Price" && (
+    <div>
+    <p>Price</p>
           <TextField
             required
             id="precio"
@@ -197,7 +162,7 @@ else {
             error={errors.price ? true : false}
             helperText={errors.price || ""}
             style={{ width: "80%", marginTop: "3%", marginBottom: "3%" }}
-            defaultValue={props.product.unitPrice}
+            defaultValue={props.combo.unitPrice}
             InputProps={{
               style: {
                 fontSize: "1.1rem",
@@ -211,6 +176,10 @@ else {
               },
             }}
           />
+          </div>
+    )}
+    {selectedOption === "Edit Profit" && (
+      <div>
          <p>Profit</p>
           <TextField
             required
@@ -221,7 +190,7 @@ else {
             error={errors.profit ? true : false}
             helperText={errors.profit || ""}
             style={{ width: "80%", marginTop: "3%", marginBottom: "3%" }}
-            defaultValue={0}
+            
             InputProps={{
               style: {
                 fontSize: "1.1rem",
@@ -235,7 +204,10 @@ else {
               },
             }}
           />
+          </div>
+    )}
         </div>
+    
       ) : (
         <div>
         <TextField

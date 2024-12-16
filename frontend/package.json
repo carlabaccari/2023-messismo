@@ -23,7 +23,6 @@
     "date-fns": "^2.30.0",
     "dayjs": "^1.11.10",
     "immer": "^10.0.3",
-    "material-ui": "^0.20.2",
     "moment": "^2.29.4",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
